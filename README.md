@@ -16,3 +16,7 @@ Número do WhatsApp: variável `WHATSAPP` em `assets/site.js` (só dígitos, com
 - Ícones: `favicon.ico`, `favicon.svg`, `apple-touch-icon.png`, `img/icon-*.png`, `site.webmanifest`
 - Imagem de compartilhamento: `img/og-sid.jpg` (1200x630)
 - Quando o domínio final estiver definido: adicionar `<link rel="canonical">`, `og:url`, URLs absolutas nas imagens e `sitemap.xml`
+
+## Analytics
+
+Vercel Web Analytics pelo script estático `/_vercel/insights/script.js` (mesmo domínio, compatível com a CSP). Ative em Vercel → projeto → Analytics → Enable.
