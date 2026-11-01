@@ -230,5 +230,67 @@
       ? 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(b.dataset.msg)
       : 'https://ig.me/m/solutioninnovadigital';
   });
-})();
+  /* ---------- CTA fixo no celular: aparece depois do topo e some na seção de contato ---------- */
+  var ctaFixo = document.querySelector('.cta-fixo');
+  var secContato = document.getElementById('contato');
+  if (ctaFixo && secContato) {
+    var noContato = false;
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) { noContato = es[0].isIntersecting; atualizaCta(); }, { threshold: 0.05 }).observe(secContato);
+    }
+    function atualizaCta() {
+      var ver = window.scrollY > hero.offsetHeight * 0.8 && !noContato;
+      ctaFixo.classList.toggle('ver', ver);
+      root.classList.toggle('cta-visivel', ver);
+    }
+    addEventListener('scroll', atualizaCta, { passive: true });
+    atualizaCta();
+  }
 
+  /* ---------- Formulário: valida, monta a mensagem e abre o WhatsApp ---------- */
+  var form = document.getElementById('form-contato');
+  if (form) {
+    var regras = {
+      nome: function (v) { return v.length < 2 ? 'Diga seu nome para a gente saber com quem fala.' : ''; },
+      servico: function (v) { return !v ? 'Escolha uma opção. Se não souber, marque "Ainda não sei".' : ''; },
+      mensagem: function (v) { return v.length < 10 ? 'Escreva pelo menos uma frase curta (10 letras ou mais).' : ''; }
+    };
+    function checa(campo) {
+      var regra = regras[campo.name];
+      if (!regra) return true;
+      var msg = regra(campo.value.trim());
+      var alvo = document.getElementById(campo.id + '-erro');
+      if (alvo) alvo.textContent = msg;
+      if (msg) campo.setAttribute('aria-invalid', 'true'); else campo.removeAttribute('aria-invalid');
+      campo.closest('.campo').classList.toggle('com-erro', !!msg);
+      return !msg;
+    }
+    Array.prototype.forEach.call(form.elements, function (el) {
+      if (!regras[el.name]) return;
+      el.addEventListener('blur', function () { if (el.value.trim()) checa(el); });
+      el.addEventListener('input', function () { if (el.closest('.campo').classList.contains('com-erro')) checa(el); });
+      el.addEventListener('change', function () { if (el.tagName === 'SELECT') checa(el); });
+    });
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var primeiro = null;
+      Array.prototype.forEach.call(form.elements, function (el) {
+        if (regras[el.name] && !checa(el) && !primeiro) primeiro = el;
+      });
+      if (primeiro) { primeiro.focus(); return; }
+      var f = form.elements;
+      var texto = 'Oi! Vim pelo site.\n' +
+        'Nome: ' + f.nome.value.trim() + '\n' +
+        (f.negocio.value.trim() ? 'Negócio: ' + f.negocio.value.trim() + '\n' : '') +
+        'Preciso de: ' + f.servico.value + '\n' +
+        f.mensagem.value.trim();
+      var url = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(texto);
+      try { sessionStorage.setItem('sid-whatsapp', url); } catch (err) {}
+      var a = document.createElement('a');
+      a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      document.body.appendChild(a); a.click(); a.remove();
+      form.reset();
+      setTimeout(function () { location.href = '/obrigado'; }, 300);
+    });
+  }
+})();

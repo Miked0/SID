@@ -15,8 +15,17 @@ Número do WhatsApp: variável `WHATSAPP` em `assets/site.js` (só dígitos, com
 - Dados estruturados (JSON-LD): ProfessionalService, WebSite e FAQPage
 - Ícones: `favicon.ico`, `favicon.svg`, `apple-touch-icon.png`, `img/icon-*.png`, `site.webmanifest`
 - Imagem de compartilhamento: `img/og-sid.jpg` (1200x630)
-- Quando o domínio final estiver definido: adicionar `<link rel="canonical">`, `og:url`, URLs absolutas nas imagens e `sitemap.xml`
+- `canonical`, `og:url`, imagens com URL absoluta, `sitemap.xml` e `robots.txt` usam hoje `https://sid-teal-ten.vercel.app`. Quando o domínio próprio estiver ativo, troque esse endereço em todos os arquivos (`grep -rl sid-teal-ten .`)
 
-## Analytics
+## Páginas
 
-Vercel Web Analytics pelo script estático `/_vercel/insights/script.js` (mesmo domínio, compatível com a CSP). Ative em Vercel → projeto → Analytics → Enable.
+- `/` (`index.html`): página principal, com formulário que monta a mensagem e abre o WhatsApp
+- `/obrigado`: confirmação depois do formulário (fora do Google: `noindex` e `Disallow` no robots)
+- `/privacidade` e `/termos`: textos genéricos, precisam de revisão jurídica
+- `404.html`: a Vercel serve sozinha para qualquer endereço que não existe
+
+## Privacidade e analytics
+
+- O site não grava cookies e não carrega nada de terceiros
+- `assets/aviso.js` (em todas as páginas) mostra o aviso de privacidade e carrega o Vercel Web Analytics (`/_vercel/insights/script.js`, mesmo domínio, sem cookies). Quem escolhe "Não contar minhas visitas" deixa de carregar o script; a escolha fica no `localStorage` (`sid-aviso`)
+- Ative a medição em Vercel → projeto → Analytics → Enable
