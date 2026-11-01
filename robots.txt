@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /obrigado
 
-Sitemap: https://sid-teal-ten.vercel.app/sitemap.xml
+Sitemap: https://solutioninnovadigital.vercel.app/sitemap.xml

@@ -15,7 +15,7 @@ Número do WhatsApp: variável `WHATSAPP` em `assets/site.js` (só dígitos, com
 - Dados estruturados (JSON-LD): ProfessionalService, WebSite e FAQPage
 - Ícones: `favicon.ico`, `favicon.svg`, `apple-touch-icon.png`, `img/icon-*.png`, `site.webmanifest`
 - Imagem de compartilhamento: `img/og-sid.jpg` (1200x630)
-- `canonical`, `og:url`, imagens com URL absoluta, `sitemap.xml` e `robots.txt` usam hoje `https://sid-teal-ten.vercel.app`. Quando o domínio próprio estiver ativo, troque esse endereço em todos os arquivos (`grep -rl sid-teal-ten .`)
+- `canonical`, `og:url`, imagens com URL absoluta, `sitemap.xml` e `robots.txt` usam hoje `https://solutioninnovadigital.vercel.app`. Quando o domínio próprio estiver ativo, troque esse endereço em todos os arquivos (`grep -rl solutioninnovadigital.vercel.app .`)
 
 ## Páginas
 
