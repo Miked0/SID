@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /obrigado
 
 Sitemap: https://solutioninnovadigital.vercel.app/sitemap.xml
