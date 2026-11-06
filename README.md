@@ -1,4 +1,4 @@
-# Site da SID · Solution Inovva Digital
+# Site da SID · Solution Innova Digital
 
 Site estático (HTML, CSS e JavaScript puro), publicado na Vercel.
 
