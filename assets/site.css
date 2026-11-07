@@ -427,6 +427,7 @@ header.solido { background: rgba(23,20,29,.86); backdrop-filter: blur(12px); -we
 .segmentos { display: grid; grid-template-columns: 1fr 1fr; list-style: none; padding: 0; border-top: 1px solid var(--filete); }
 .segmentos li { padding: 20px 8px 20px 0; border-bottom: 1px solid var(--filete); font: 800 clamp(22px, 2.6vw, 30px)/1.05 var(--display); text-transform: uppercase; transition: color .3s var(--ease), padding .3s var(--ease); }
 .segmentos li:hover { color: var(--roxo); padding-left: 8px; }
+.segmentos-nota { margin-top: 28px; max-width: 62ch; }
 
 /* DEPOIMENTOS */
 .depo { display: grid; gap: 16px; padding: 28px; background: var(--branco); border: 1px solid var(--filete); }
