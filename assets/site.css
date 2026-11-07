@@ -663,3 +663,33 @@ main { overflow-x: clip; }
 .erro-404 .numero-404 { font: 900 clamp(120px, 30vw, 320px)/.8 var(--display); color: var(--roxo); display: block; margin-bottom: 8px; }
 .pular { position: absolute; left: 12px; top: -60px; z-index: 100; background: var(--menta); color: var(--roxo-fundo); padding: 10px 14px; font-weight: 800; text-decoration: none; }
 .pular:focus { top: 12px; }
+
+/* ---------- Páginas de serviço, nicho e blog ---------- */
+.trilha ol { display: flex; flex-wrap: wrap; gap: 6px 10px; list-style: none; padding: 0; margin: 0 0 28px; font: 600 13px/1.4 var(--texto); color: var(--lilas); }
+.trilha li + li::before { content: "›"; margin-right: 10px; color: var(--menta); }
+.trilha a { color: var(--lilas); }
+.trilha a:hover { color: var(--menta); }
+.pagina-topo .post-meta { font-size: 14px; margin-top: 20px; }
+.conteudo h2 a { color: inherit; text-decoration-color: var(--menta); text-underline-offset: 6px; }
+.conteudo h3 { font-size: clamp(22px, 3vw, 28px); margin: 28px 0 10px; color: var(--roxo); }
+.conteudo ol { margin-top: 12px; display: grid; gap: 8px; padding-left: 22px; }
+.conteudo ol li, .conteudo ul li { color: var(--tinta-2); max-width: 70ch; }
+.conteudo strong { color: var(--tinta); }
+.conteudo p a, .conteudo li a { color: var(--roxo); }
+.conteudo .faq { margin-top: 8px; }
+.pag-cta { padding-block: 72px; }
+.pag-cta h2 { font-size: clamp(36px, 6vw, 72px); }
+.pag-cta p { margin-top: 18px; max-width: 60ch; font-size: 18px; }
+.pag-cta .row { margin-top: 28px; }
+.relacionadas { padding-block: 56px; }
+.relacionadas .rot { color: var(--roxo); display: block; margin-bottom: 18px; }
+.relacionadas ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 0; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); border-top: 1px solid var(--filete); }
+.relacionadas li { border-bottom: 1px solid var(--filete); }
+.relacionadas a { display: flex; gap: 10px; padding: 18px 24px 18px 0; font: 800 clamp(20px, 2.2vw, 26px)/1.1 var(--display); text-transform: uppercase; color: var(--tinta); text-decoration: none; }
+.relacionadas a:hover { color: var(--roxo); }
+.links-servicos { margin-top: 40px; display: flex; flex-wrap: wrap; gap: 10px 24px; font: 700 15px/1.4 var(--texto); }
+.links-servicos .rot { flex-basis: 100%; }
+.escuro .links-servicos a { color: var(--menta); }
+.claro .links-servicos a { color: var(--roxo); }
+.conteudo ul + p, .conteudo ol + p { margin-top: 16px; }
+@media (min-width: 900px) { .pagina .rodape { grid-template-columns: repeat(4, 1fr); } }
