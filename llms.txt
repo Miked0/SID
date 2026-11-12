@@ -1,0 +1,36 @@
+# SID · Solution Innova Digital
+
+> Criação de sites, identidade visual, social media e sistemas de gestão para pequenos negócios e para o pequeno empreendedor que está começando no digital. Atendimento presencial em São Paulo e online para todo o Brasil. Pagamento via Pix, com contrato e proposta por escrito.
+
+O site apresenta os serviços, os tipos de negócio atendidos, o processo de trabalho e as dúvidas mais comuns. A primeira conversa é gratuita e acontece pelo WhatsApp.
+
+## Serviços
+
+- [Criação de sites](https://solutioninnovadigital.vercel.app/criacao-de-sites): sites profissionais, responsivos e prontos para o Google, com botão de WhatsApp.
+- [Identidade visual](https://solutioninnovadigital.vercel.app/identidade-visual): logo, cores, tipografia e materiais para a marca do negócio.
+- [Social media](https://solutioninnovadigital.vercel.app/social-media): posts, carrosséis, stories e legendas para o Instagram do negócio.
+- [Sistemas de gestão](https://solutioninnovadigital.vercel.app/sistemas-de-gestao): sistemas sob medida, como controle financeiro, controle de estoque e painéis.
+
+## Sites por tipo de negócio
+
+- [Clínica de estética](https://solutioninnovadigital.vercel.app/site-para-clinica-de-estetica)
+- [Pet shop](https://solutioninnovadigital.vercel.app/site-para-pet-shop)
+- [Barbearia](https://solutioninnovadigital.vercel.app/site-para-barbearia)
+- [Academia e estúdio](https://solutioninnovadigital.vercel.app/site-para-academia)
+
+## Blog
+
+- [Blog](https://solutioninnovadigital.vercel.app/blog)
+- [Quanto custa um site para pequeno negócio](https://solutioninnovadigital.vercel.app/blog/quanto-custa-um-site)
+- [Como aparecer no Google Maps](https://solutioninnovadigital.vercel.app/blog/como-aparecer-no-google-maps)
+
+## Institucional
+
+- [Início](https://solutioninnovadigital.vercel.app/)
+- [Política de privacidade](https://solutioninnovadigital.vercel.app/privacidade)
+- [Termos de uso](https://solutioninnovadigital.vercel.app/termos)
+- [Instagram](https://instagram.com/solutioninnovadigital)
+
+## Contato
+
+- WhatsApp: pelo botão da página de contato em https://solutioninnovadigital.vercel.app/#contato
