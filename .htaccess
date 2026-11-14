@@ -8,6 +8,10 @@ RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
+# 1b. Agentes que pedem Markdown (Accept: text/markdown) recebem index.md na home
+RewriteCond %{HTTP_ACCEPT} text/markdown [NC]
+RewriteRule ^$ /index.md [L]
+
 # 2. Bloquear arquivos internos do repositório
 RewriteRule ^(\.git|\.vercelignore|vercel\.json|README\.md)(/|$) - [F,L]
 
@@ -34,8 +38,17 @@ ErrorDocument 404 /404.html
 # 7. Tipos de arquivo
 AddType application/manifest+json .webmanifest
 AddType font/woff2 .woff2
+AddType "text/markdown; charset=utf-8" .md
 
 <IfModule mod_headers.c>
+  # A resposta muda conforme o Accept (HTML ou Markdown): avisa caches
+  Header merge Vary Accept
+
+  # Na home, aponta para o llms.txt e para a versão em Markdown (RFC 8288)
+  <If "%{REQUEST_URI} == '/'">
+    Header always set Link "</llms.txt>; rel=\"describedby\"; type=\"text/plain\", </index.md>; rel=\"alternate\"; type=\"text/markdown\""
+  </If>
+
   # Cabeçalhos de segurança em todas as respostas
   Header always set Content-Security-Policy "default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests"
   Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"

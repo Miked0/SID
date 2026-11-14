@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
+Content-Signal: search=yes, ai-train=no
 
 # Rastreadores de busca e de IA: permitidos explicitamente.
 User-agent: Googlebot
