@@ -693,3 +693,7 @@ main { overflow-x: clip; }
 .claro .links-servicos a { color: var(--roxo); }
 .conteudo ul + p, .conteudo ol + p { margin-top: 16px; }
 @media (min-width: 900px) { .pagina .rodape { grid-template-columns: repeat(4, 1fr); } }
+
+/* Troca de idioma (PT / EN) no cabeçalho */
+.idioma { font: 700 12px/1 var(--texto); letter-spacing: .12em; text-transform: uppercase; color: inherit; text-decoration: none; padding: 8px 2px; border-bottom: 2px solid transparent; transition: border-color .3s var(--ease); }
+.idioma:hover, .idioma:focus-visible { border-color: var(--menta); }
