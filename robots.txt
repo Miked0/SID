@@ -29,4 +29,4 @@ Allow: /
 User-agent: PerplexityBot
 Allow: /
 
-Sitemap: https://solutioninnovadigital.vercel.app/sitemap.xml
+Sitemap: https://solutioninnovadigital.com/sitemap.xml
