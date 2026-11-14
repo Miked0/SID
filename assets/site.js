@@ -1,5 +1,8 @@
 (function () {
   var root = document.documentElement;
+  /* Mesma base para as duas línguas: a página em inglês (/en/) define lang="en". */
+  var EN = root.lang === 'en';
+  var LOC = EN ? 'en-US' : 'pt-BR';
   var calmo = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var finoPonteiro = matchMedia('(hover: hover) and (pointer: fine)').matches;
   if (!calmo) root.classList.add('motion');
@@ -169,7 +172,7 @@
   function contar(arte) {
     arte.querySelectorAll('.m-conta').forEach(function (el) {
       var alvo = parseFloat(el.dataset.para), dec = +(el.dataset.dec || 0);
-      function fmt(v) { return v.toLocaleString('pt-BR', { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
+      function fmt(v) { return v.toLocaleString(LOC, { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
       if (calmo) { el.textContent = fmt(alvo); return; }
       var t0 = null, dur = 1400, atraso = 1100;
       el.textContent = fmt(0);
@@ -251,9 +254,9 @@
   var form = document.getElementById('form-contato');
   if (form) {
     var regras = {
-      nome: function (v) { return v.length < 2 ? 'Diga seu nome para a gente saber com quem fala.' : ''; },
-      servico: function (v) { return !v ? 'Escolha uma opção. Se não souber, marque "Ainda não sei".' : ''; },
-      mensagem: function (v) { return v.length < 10 ? 'Escreva pelo menos uma frase curta (10 letras ou mais).' : ''; }
+      nome: function (v) { return v.length < 2 ? (EN ? 'Tell us your name so we know who we are talking to.' : 'Diga seu nome para a gente saber com quem fala.') : ''; },
+      servico: function (v) { return !v ? (EN ? 'Choose an option. If you are not sure, pick "Not sure yet".' : 'Escolha uma opção. Se não souber, marque "Ainda não sei".') : ''; },
+      mensagem: function (v) { return v.length < 10 ? (EN ? 'Write at least one short sentence (10 characters or more).' : 'Escreva pelo menos uma frase curta (10 letras ou mais).') : ''; }
     };
     function checa(campo) {
       var regra = regras[campo.name];
@@ -279,10 +282,10 @@
       });
       if (primeiro) { primeiro.focus(); return; }
       var f = form.elements;
-      var texto = 'Oi! Vim pelo site.\n' +
-        'Nome: ' + f.nome.value.trim() + '\n' +
-        (f.negocio.value.trim() ? 'Negócio: ' + f.negocio.value.trim() + '\n' : '') +
-        'Preciso de: ' + f.servico.value + '\n' +
+      var texto = (EN ? 'Hi! I came through the website.\n' : 'Oi! Vim pelo site.\n') +
+        (EN ? 'Name: ' : 'Nome: ') + f.nome.value.trim() + '\n' +
+        (f.negocio.value.trim() ? (EN ? 'Business: ' : 'Negócio: ') + f.negocio.value.trim() + '\n' : '') +
+        (EN ? 'I need: ' : 'Preciso de: ') + f.servico.value + '\n' +
         f.mensagem.value.trim();
       var url = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(texto);
       try { sessionStorage.setItem('sid-whatsapp', url); } catch (err) {}
@@ -290,7 +293,7 @@
       a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
       document.body.appendChild(a); a.click(); a.remove();
       form.reset();
-      setTimeout(function () { location.href = '/obrigado'; }, 300);
+      setTimeout(function () { location.href = EN ? '/en/obrigado' : '/obrigado'; }, 300);
     });
   }
 })();

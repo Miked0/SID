@@ -4,6 +4,7 @@
    A escolha da pessoa fica no localStorage do navegador dela (chave "sid-aviso"). */
 (function () {
   var CHAVE = 'sid-aviso';
+  var EN = document.documentElement.lang === 'en';
   function ler() { try { return localStorage.getItem(CHAVE); } catch (e) { return null; } }
   function gravar(v) { try { localStorage.setItem(CHAVE, v); } catch (e) {} }
 
@@ -24,7 +25,13 @@
   aviso.className = 'aviso-priv';
   aviso.setAttribute('role', 'region');
   aviso.setAttribute('aria-label', 'Aviso de privacidade');
-  aviso.innerHTML =
+  aviso.innerHTML = EN ?
+    '<p>This site does not use cookies. We count visits anonymously, without identifying you. ' +
+    '<a href="/privacidade">Privacy policy (in Portuguese)</a></p>' +
+    '<div class="aviso-acoes">' +
+    '<button type="button" class="btn btn-menta" data-escolha="ok">Got it</button>' +
+    '<button type="button" class="aviso-recusa" data-escolha="sem-medicao">Do not count my visits</button>' +
+    '</div>' :
     '<p>Este site não usa cookies. Contamos as visitas de forma anônima, sem identificar você. ' +
     '<a href="/privacidade">Política de privacidade</a></p>' +
     '<div class="aviso-acoes">' +
