@@ -37,7 +37,7 @@ AddType font/woff2 .woff2
 
 <IfModule mod_headers.c>
   # Cabeçalhos de segurança em todas as respostas
-  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' https://tracker.metricool.com; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://tracker.metricool.com; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests"
+  Header always set Content-Security-Policy "default-src 'none'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests"
   Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
   Header always set X-Content-Type-Options "nosniff"
   Header always set X-Frame-Options "DENY"
