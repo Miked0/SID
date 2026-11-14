@@ -1,0 +1,61 @@
+# Configuração do site SID na Hostinger (Apache).
+# Equivale ao vercel.json: URLs limpas, cabeçalhos de segurança e cache.
+
+Options -Indexes -MultiViews
+RewriteEngine On
+
+# 1. Forçar HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+# 2. Bloquear arquivos internos do repositório
+RewriteRule ^(\.git|\.vercelignore|vercel\.json|README\.md)(/|$) - [F,L]
+
+# 3. Remover a extensão .html da URL (301 para a versão limpa)
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.html[\s?] [NC]
+RewriteRule ^ /%1 [R=301,L]
+
+# 3b. /index e /index.html viram /
+RewriteCond %{THE_REQUEST} \s/index(\.html)?[\s?] [NC]
+RewriteRule ^ / [R=301,L]
+
+# 4. Remover a barra final (exceto em diretórios reais)
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.+)/$ /$1 [R=301,L]
+
+# 5. Servir /pagina como pagina.html quando existir
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}\.html -f
+RewriteRule ^(.+)$ $1.html [L]
+
+# 6. Página 404 personalizada
+ErrorDocument 404 /404.html
+
+# 7. Tipos de arquivo
+AddType application/manifest+json .webmanifest
+AddType font/woff2 .woff2
+
+<IfModule mod_headers.c>
+  # Cabeçalhos de segurança em todas as respostas
+  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' https://tracker.metricool.com; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://tracker.metricool.com; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests"
+  Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), usb=(), xr-spatial-tracking=(), interest-cohort=()"
+  Header always set Cross-Origin-Opener-Policy "same-origin"
+  Header always set Cross-Origin-Resource-Policy "same-origin"
+  Header always set X-Permitted-Cross-Domain-Policies "none"
+
+  # Cache de fontes e assets
+  <FilesMatch "\.woff2$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType text/css "access plus 1 hour"
+  ExpiresByType application/javascript "access plus 1 hour"
+</IfModule>
