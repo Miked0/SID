@@ -8,7 +8,7 @@
   var mc = typeof navigator !== 'undefined' ? navigator.modelContext : null;
   if (!mc || typeof mc.registerTool !== 'function') return;
 
-  var WHATSAPP = 'https://wa.me/5511984774107';
+  var WHATSAPP = 'https://wa.me/5511911963379';
   var INSTAGRAM = 'https://instagram.com/solutioninnovadigital';
   var SERVICOS = ['Site', 'Identidade visual', 'Sistema de gestão', 'Social media', 'Ainda não sei'];
 
