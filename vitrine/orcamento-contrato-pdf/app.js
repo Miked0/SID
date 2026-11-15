@@ -5,14 +5,26 @@ const $$ = (sel, raiz = document) => [...raiz.querySelectorAll(sel)];
 
 const moeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 const numero = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 });
+const reduzMovimento = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const CHAVE_RASCUNHO = 'sid-orcamento-rascunho-v1';
+const CHAVE_HISTORICO = 'sid-orcamento-historico-v1';
+const LIMITE_HISTORICO = 12;
+
+const FONTES = {
+  titulo: 'fonts/BigShouldersDisplay-800.ttf',
+  corpo: 'fonts/Manrope-400.ttf',
+  negrito: 'fonts/Manrope-800.ttf',
+};
 
 const PAGAMENTO = {
   'pix-vista': { rotulo: 'Pix à vista', parcelas: 1 },
   'pix-2': { rotulo: 'Pix em 2 parcelas iguais', parcelas: 2 },
   'pix-3': { rotulo: 'Pix em 3 parcelas iguais', parcelas: 3 },
+  'credito-3': { rotulo: 'Cartão de crédito em 3x', parcelas: 3 },
 };
 
-// Dados de exemplo: cliente fictício. Contato da empresa é o WhatsApp público da SID.
+// Dados de exemplo: cliente fictício. O contato é o WhatsApp público da SID.
 const EXEMPLO = {
   tipo: 'orcamento',
   empNome: 'Solution Innova Digital',
@@ -40,10 +52,43 @@ const EXEMPLO = {
 const form = $('#form');
 const itensBox = $('#itens');
 const tplItem = $('#tpl-item');
+const tplHist = $('#tpl-hist');
 const btnGerar = $('#gerar');
-const statusBox = $('#status');
 const errosBox = $('#erros');
+const papel = $('#papel');
 
+// ---------------------------------------------------------------------------
+// Armazenamento local (só conveniência: falha em silêncio quando bloqueado)
+// ---------------------------------------------------------------------------
+const armazenamento = {
+  ler(chave, padrao) {
+    try {
+      const v = window.localStorage.getItem(chave);
+      return v ? JSON.parse(v) : padrao;
+    } catch {
+      return padrao;
+    }
+  },
+  gravar(chave, valor) {
+    try {
+      window.localStorage.setItem(chave, JSON.stringify(valor));
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  apagar(chave) {
+    try {
+      window.localStorage.removeItem(chave);
+    } catch {
+      /* sem armazenamento */
+    }
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Utilitários
+// ---------------------------------------------------------------------------
 function parseNum(valor) {
   let t = String(valor ?? '').trim().replace(/R\$|\s/g, '');
   if (!t) return NaN;
@@ -52,17 +97,45 @@ function parseNum(valor) {
   return Number.isFinite(n) ? n : NaN;
 }
 
+const minusculaInicial = (t) => (t ? t.charAt(0).toLowerCase() + t.slice(1) : t);
 const br = (iso) => (iso ? iso.split('-').reverse().join('/') : '—');
 const txt = (v) => (v && String(v).trim() ? String(v).trim() : '—');
+const hojeISO = () => {
+  const d = new Date();
+  const z = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`;
+};
+const somarDias = (iso, dias) => {
+  const d = new Date(`${iso}T12:00:00`);
+  d.setDate(d.getDate() + dias);
+  return d.toISOString().slice(0, 10);
+};
 
+let toastTimer;
+function toast(msg, tipo = 'ok') {
+  const el = $('#toast');
+  el.textContent = msg;
+  el.dataset.tipo = tipo;
+  el.classList.remove('visivel');
+  void el.offsetWidth;
+  el.classList.add('visivel');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('visivel'), 3600);
+}
+
+// ---------------------------------------------------------------------------
+// Modelo
+// ---------------------------------------------------------------------------
 function lerForm() {
   const campo = (nome) => (form.elements[nome] ? form.elements[nome].value : '');
-  const itens = $$('.item', itensBox).map((linha) => ({
-    descricao: $('[name=descricao]', linha).value.trim(),
-    qtd: $('[name=qtd]', linha).value,
-    unit: $('[name=unit]', linha).value,
-    linha,
-  }));
+  const itens = $$('.item', itensBox)
+    .filter((l) => !l.classList.contains('saindo'))
+    .map((linha) => ({
+      descricao: $('[name=descricao]', linha).value.trim(),
+      qtd: $('[name=qtd]', linha).value,
+      unit: $('[name=unit]', linha).value,
+      linha,
+    }));
   return {
     tipo: form.elements.tipo.value,
     empNome: campo('empNome').trim(),
@@ -84,6 +157,11 @@ function lerForm() {
   };
 }
 
+function instantaneo(m) {
+  const { itens, ...resto } = m;
+  return { ...resto, itens: itens.map(({ descricao, qtd, unit }) => ({ descricao, qtd, unit })) };
+}
+
 function calcular(m) {
   const itens = m.itens
     .filter((i) => i.descricao || i.qtd || i.unit)
@@ -92,12 +170,11 @@ function calcular(m) {
       const u = parseNum(i.unit);
       return { ...i, q, u, sub: Number.isFinite(q) && Number.isFinite(u) ? q * u : NaN };
     });
-  const subtotal = itens.reduce((s, i) => s + (Number.isFinite(i.sub) ? i.sub : 0), 0);
-  const pct = m.desconto.trim() === '' ? 0 : parseNum(m.desconto);
-  const descontoValor = Number.isFinite(pct) ? (subtotal * pct) / 100 : 0;
+  const subtotal = itens.reduce((s, i) => s + (i.descricao && Number.isFinite(i.sub) ? i.sub : 0), 0);
+  const pct = String(m.desconto).trim() === '' ? 0 : parseNum(m.desconto);
+  const descontoValor = Number.isFinite(pct) && pct > 0 && pct <= 100 ? (subtotal * pct) / 100 : 0;
   const total = subtotal - descontoValor;
-  const parcelas = PAGAMENTO[m.pagamento]?.parcelas ?? 1;
-  return { itens, subtotal, pct, descontoValor, total, parcelas };
+  return { itens, subtotal, pct, descontoValor, total };
 }
 
 function textoPagamento(m, c) {
@@ -116,25 +193,19 @@ function validar(m, c) {
   if (m.emissao && m.validade && m.validade < m.emissao) {
     ref(form.elements.validade, 'A validade precisa ser depois da data de emissão.');
   }
-  const comItem = c.itens.filter((i) => i.descricao);
-  if (!comItem.length) {
-    erros.push({ el: $('#add-item'), msg: 'Adicione pelo menos um item com descrição.' });
-  }
+  if (!c.itens.some((i) => i.descricao)) ref($('#add-item'), 'Adicione pelo menos um item com descrição.');
   c.itens.forEach((i, n) => {
-    const campoDesc = $('[name=descricao]', i.linha);
-    const campoQtd = $('[name=qtd]', i.linha);
-    const campoUnit = $('[name=unit]', i.linha);
     if (i.descricao && (!Number.isFinite(i.q) || i.q <= 0)) {
-      erros.push({ el: campoQtd, msg: `Quantidade do item ${n + 1} precisa ser maior que zero.` });
+      ref($('[name=qtd]', i.linha), `Quantidade do item ${n + 1} precisa ser maior que zero.`);
     }
     if (i.descricao && (!Number.isFinite(i.u) || i.u < 0)) {
-      erros.push({ el: campoUnit, msg: `Valor unitário do item ${n + 1} precisa ser um número válido.` });
+      ref($('[name=unit]', i.linha), `Valor unitário do item ${n + 1} precisa ser um número, como 1.500,00.`);
     }
-    if (!i.descricao && (i.qtd || i.unit)) {
-      erros.push({ el: campoDesc, msg: `Descreva o item ${n + 1} ou remova a linha.` });
+    if (!i.descricao && (i.unit || (i.qtd && i.qtd !== '1'))) {
+      ref($('[name=descricao]', i.linha), `Descreva o item ${n + 1} ou remova a linha.`);
     }
   });
-  if (m.desconto.trim() !== '' && (!Number.isFinite(c.pct) || c.pct < 0 || c.pct > 100)) {
+  if (String(m.desconto).trim() !== '' && (!Number.isFinite(c.pct) || c.pct < 0 || c.pct > 100)) {
     ref(form.elements.desconto, 'Desconto deve ficar entre 0 e 100%.');
   }
   return erros;
@@ -147,56 +218,50 @@ function marcarErros(erros) {
 
 function mostrarErros(erros) {
   errosBox.replaceChildren();
-  if (!erros.length) {
-    errosBox.hidden = true;
-    return;
-  }
+  errosBox.hidden = !erros.length;
+  if (!erros.length) return;
   const titulo = document.createElement('strong');
   titulo.textContent = `Corrija ${erros.length === 1 ? '1 ponto' : `${erros.length} pontos`} antes de gerar o PDF:`;
   const lista = document.createElement('ul');
-  erros.forEach(({ el, msg }) => {
+  for (const { el, msg } of erros) {
     const li = document.createElement('li');
-    const link = document.createElement('a');
-    link.href = '#';
-    link.textContent = msg;
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      el && el.focus();
-    });
-    li.append(link);
+    const bt = document.createElement('button');
+    bt.type = 'button';
+    bt.className = 'erro-link';
+    bt.textContent = msg;
+    bt.addEventListener('click', () => el && el.focus());
+    li.append(bt);
     lista.append(li);
-  });
+  }
   errosBox.append(titulo, lista);
-  errosBox.hidden = false;
+  errosBox.classList.remove('tremer');
+  void errosBox.offsetWidth;
+  errosBox.classList.add('tremer');
 }
 
-function setStatus(msg) {
-  statusBox.textContent = msg;
-}
-
-function novaLinha(valores = {}) {
-  const frag = tplItem.content.cloneNode(true);
-  const linha = frag.querySelector('.item');
-  $('[name=descricao]', linha).value = valores.descricao ?? '';
-  $('[name=qtd]', linha).value = valores.qtd ?? '1';
-  $('[name=unit]', linha).value = valores.unit ?? '';
-  const n = itensBox.children.length + 1;
-  $('[name=descricao]', linha).setAttribute('aria-label', `Descrição do item ${n}`);
-  $('[name=qtd]', linha).setAttribute('aria-label', `Quantidade do item ${n}`);
-  $('[name=unit]', linha).setAttribute('aria-label', `Valor unitário do item ${n}, em reais`);
-  $('.remover', linha).setAttribute('aria-label', `Remover item ${n}`);
-  itensBox.append(linha);
-  atualizarSubtotais();
-}
-
+// ---------------------------------------------------------------------------
+// Itens
+// ---------------------------------------------------------------------------
 function renumerar() {
   $$('.item', itensBox).forEach((linha, idx) => {
     const n = idx + 1;
+    $('.item-num', linha).textContent = String(n).padStart(2, '0');
     $('[name=descricao]', linha).setAttribute('aria-label', `Descrição do item ${n}`);
     $('[name=qtd]', linha).setAttribute('aria-label', `Quantidade do item ${n}`);
     $('[name=unit]', linha).setAttribute('aria-label', `Valor unitário do item ${n}, em reais`);
     $('.remover', linha).setAttribute('aria-label', `Remover item ${n}`);
   });
+}
+
+function novaLinha(valores = {}, animar = false) {
+  const linha = tplItem.content.firstElementChild.cloneNode(true);
+  $('[name=descricao]', linha).value = valores.descricao ?? '';
+  $('[name=qtd]', linha).value = valores.qtd ?? '1';
+  $('[name=unit]', linha).value = valores.unit ?? '';
+  if (animar) linha.classList.add('entrando');
+  itensBox.append(linha);
+  renumerar();
+  return linha;
 }
 
 function atualizarSubtotais() {
@@ -208,30 +273,52 @@ function atualizarSubtotais() {
   });
 }
 
-function preencher(dados) {
-  form.elements.tipo.value = dados.tipo;
-  for (const k of Object.keys(dados)) {
-    if (k === 'tipo' || k === 'itens') continue;
-    if (form.elements[k]) form.elements[k].value = dados[k];
+// ---------------------------------------------------------------------------
+// Prévia
+// ---------------------------------------------------------------------------
+let totalAtual = 0;
+let animTotal;
+function animarTotal(destino) {
+  const el = $('#p-total');
+  cancelAnimationFrame(animTotal);
+  const inicio = totalAtual;
+  if (reduzMovimento() || inicio === destino) {
+    totalAtual = destino;
+    el.textContent = moeda.format(destino);
+    return;
   }
-  itensBox.replaceChildren();
-  dados.itens.forEach((i) => novaLinha(i));
-  renumerar();
-  atualizarTipo();
-  renderizar();
+  const t0 = performance.now();
+  const dur = 520;
+  const passo = (t) => {
+    const k = Math.min(1, (t - t0) / dur);
+    const e = 1 - (1 - k) ** 3;
+    totalAtual = inicio + (destino - inicio) * e;
+    el.textContent = moeda.format(totalAtual);
+    if (k < 1) animTotal = requestAnimationFrame(passo);
+    else totalAtual = destino;
+  };
+  animTotal = requestAnimationFrame(passo);
+}
+
+function pulsarPapel() {
+  if (reduzMovimento()) return;
+  papel.classList.remove('pulso');
+  void papel.offsetWidth;
+  papel.classList.add('pulso');
 }
 
 function atualizarTipo() {
   const contrato = form.elements.tipo.value === 'contrato';
+  form.dataset.tipo = contrato ? 'contrato' : 'orcamento';
   $('#campos-contrato').hidden = !contrato;
   $('#p-contrato').hidden = !contrato;
   $('#p-titulo').textContent = contrato ? 'Contrato' : 'Orçamento';
-  $('#p-ass1').textContent = contrato ? 'Contratante' : 'Emitente';
-  $('#p-ass2').textContent = contrato ? 'Contratada' : 'Cliente (aceite)';
-  btnGerar.textContent = contrato ? 'Gerar PDF do contrato' : 'Gerar PDF do orçamento';
+  $('#p-ass1-rot').textContent = contrato ? 'Contratada' : 'Emitente';
+  $('#p-ass2-rot').textContent = contrato ? 'Contratante' : 'Cliente (aceite)';
+  $('.btn-rotulo', btnGerar).textContent = contrato ? 'Gerar PDF do contrato' : 'Gerar PDF do orçamento';
 }
 
-function renderizar() {
+function renderizar({ pulso = false } = {}) {
   const m = lerForm();
   const c = calcular(m);
   const set = (id, v) => {
@@ -249,29 +336,34 @@ function renderizar() {
 
   const corpo = $('#p-itens');
   corpo.replaceChildren();
-  const linhasValidas = c.itens.filter((i) => i.descricao);
-  for (const i of linhasValidas) {
+  const validas = c.itens.filter((i) => i.descricao);
+  validas.forEach((i, idx) => {
     const tr = document.createElement('tr');
     const celulas = [
-      [i.descricao, ''],
+      [i.descricao, '', String(idx + 1).padStart(2, '0')],
       [Number.isFinite(i.q) ? numero.format(i.q) : '—', 'n'],
       [Number.isFinite(i.u) ? moeda.format(i.u) : '—', 'n'],
       [Number.isFinite(i.sub) ? moeda.format(i.sub) : '—', 'n'],
     ];
-    for (const [v, cls] of celulas) {
+    for (const [v, cls, num] of celulas) {
       const td = document.createElement('td');
-      td.textContent = v;
+      if (num) {
+        const s = document.createElement('span');
+        s.className = 'p-num';
+        s.textContent = num;
+        td.append(s, document.createTextNode(v));
+      } else td.textContent = v;
       if (cls) td.className = cls;
       tr.append(td);
     }
     corpo.append(tr);
-  }
-  if (!linhasValidas.length) {
+  });
+  if (!validas.length) {
     const tr = document.createElement('tr');
     const td = document.createElement('td');
     td.colSpan = 4;
-    td.textContent = 'Nenhum item ainda. Adicione um item ao lado.';
-    td.style.color = 'var(--tinta-2)';
+    td.className = 'p-vazio';
+    td.textContent = 'Nenhum item ainda. Adicione o primeiro no formulário.';
     tr.append(td);
     corpo.append(tr);
   }
@@ -280,21 +372,137 @@ function renderizar() {
   $('#p-desc-linha').hidden = !c.descontoValor;
   set('p-desc-rotulo', `Desconto (${numero.format(c.pct || 0)}%)`);
   set('p-desc', `− ${moeda.format(c.descontoValor)}`);
-  set('p-total', moeda.format(c.total));
+  animarTotal(c.total);
   set('p-pagamento', textoPagamento(m, c));
   set('p-prazo', txt(m.prazo));
   set('p-prazo2', txt(m.prazo));
   set('p-obs', m.obs);
   set('p-objeto', txt(m.objeto));
-  set('p-valor', `O valor total é ${moeda.format(c.total)}, pago da seguinte forma: ${textoPagamento(m, c).toLowerCase()}.`);
+  set('p-valor', `O valor total é ${moeda.format(c.total)}, pago da seguinte forma: ${minusculaInicial(textoPagamento(m, c))}.`);
   set('p-rescisao', txt(m.rescisao));
-  set('p-ass1', m.tipo === 'contrato' ? `Contratante: ${txt(m.empNome)}` : `Emitente: ${txt(m.empNome)}`);
-  set('p-ass2', m.tipo === 'contrato' ? `Contratada: ${txt(m.cliNome)}` : `Cliente: ${txt(m.cliNome)}`);
+  set('p-ass1', txt(m.empNome));
+  set('p-ass2', txt(m.cliNome));
   atualizarSubtotais();
+  if (pulso) pulsarPapel();
+}
+
+// ---------------------------------------------------------------------------
+// Preencher, rascunho e histórico
+// ---------------------------------------------------------------------------
+function preencher(dados) {
+  form.elements.tipo.value = dados.tipo === 'contrato' ? 'contrato' : 'orcamento';
+  for (const k of Object.keys(dados)) {
+    if (k === 'tipo' || k === 'itens') continue;
+    if (form.elements[k]) form.elements[k].value = dados[k] ?? '';
+  }
+  itensBox.replaceChildren();
+  (dados.itens?.length ? dados.itens : [{}]).forEach((i) => novaLinha(i));
+  mostrarErros([]);
+  marcarErros([]);
+  atualizarTipo();
+  renderizar({ pulso: true });
+  $('#badge-status').textContent = 'Rascunho';
+  $('#badge-status').dataset.estado = 'rascunho';
+}
+
+let salvarTimer;
+function agendarRascunho() {
+  clearTimeout(salvarTimer);
+  salvarTimer = setTimeout(() => {
+    const ok = armazenamento.gravar(CHAVE_RASCUNHO, { salvoEm: Date.now(), dados: instantaneo(lerForm()) });
+    const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    $('#salvo').textContent = ok ? `Rascunho salvo às ${hora}` : 'Este navegador não permite salvar o rascunho.';
+    $('#salvo').classList.toggle('ok', ok);
+  }, 450);
+}
+
+const lerHistorico = () => {
+  const h = armazenamento.ler(CHAVE_HISTORICO, []);
+  return Array.isArray(h) ? h : [];
+};
+
+function proximoNumero(tipo) {
+  const prefixo = tipo === 'contrato' ? 'CT' : 'ORC';
+  const ano = new Date().getFullYear();
+  const usados = lerHistorico()
+    .map((h) => String(h.dados?.numero || ''))
+    .filter((n) => n.startsWith(`${prefixo}-${ano}-`))
+    .map((n) => parseInt(n.split('-')[2], 10))
+    .filter(Number.isFinite);
+  const prox = (usados.length ? Math.max(...usados) : 0) + 1;
+  return `${prefixo}-${ano}-${String(prox).padStart(3, '0')}`;
+}
+
+function registrarNoHistorico(m, c) {
+  const hist = lerHistorico();
+  const entrada = {
+    id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
+    criadoEm: Date.now(),
+    tipo: m.tipo,
+    numero: m.numero,
+    cliente: m.cliNome,
+    total: c.total,
+    dados: instantaneo(m),
+  };
+  const semDuplicado = hist.filter((h) => !(h.numero === entrada.numero && h.tipo === entrada.tipo));
+  const novo = [entrada, ...semDuplicado].slice(0, LIMITE_HISTORICO);
+  const ok = armazenamento.gravar(CHAVE_HISTORICO, novo);
+  renderizarHistorico(ok ? entrada.id : null);
+  return ok;
+}
+
+function renderizarHistorico(destaque = null) {
+  const hist = lerHistorico();
+  const lista = $('#hist-lista');
+  lista.replaceChildren();
+  $('#hist-vazio').hidden = hist.length > 0;
+  $('#limpar-historico').hidden = !hist.length;
+  for (const h of hist) {
+    const li = tplHist.content.firstElementChild.cloneNode(true);
+    li.dataset.id = h.id;
+    li.dataset.tipo = h.tipo;
+    $('.hist-tipo', li).textContent = h.tipo === 'contrato' ? 'Contrato' : 'Orçamento';
+    $('.hist-num', li).textContent = h.numero || 'Sem número';
+    $('.hist-cli', li).textContent = h.cliente || 'Cliente sem nome';
+    $('.hist-total', li).textContent = moeda.format(Number(h.total) || 0);
+    $('.hist-data', li).textContent = new Date(h.criadoEm).toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    for (const bt of $$('button', li)) {
+      bt.setAttribute('aria-label', `${bt.textContent.trim()}: ${h.numero || 'documento'}`);
+    }
+    if (h.id === destaque) li.classList.add('novo');
+    lista.append(li);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// PDF
+// ---------------------------------------------------------------------------
+let fontesPromise = null;
+function carregarFontes() {
+  if (!fontesPromise) {
+    fontesPromise = Promise.all(
+      Object.entries(FONTES).map(async ([chave, url]) => {
+        const r = await fetch(url);
+        if (!r.ok) throw new Error(`Fonte ${url}: ${r.status}`);
+        return [chave, await r.arrayBuffer()];
+      })
+    )
+      .then(Object.fromEntries)
+      .catch((e) => {
+        fontesPromise = null;
+        throw e;
+      });
+  }
+  return fontesPromise;
 }
 
 function montarDocumento(m, c) {
-  const contrato = m.tipo === 'contrato';
   return {
     tipo: m.tipo,
     numero: m.numero,
@@ -319,63 +527,114 @@ function montarDocumento(m, c) {
     prazo: m.prazo || '—',
     obs: m.obs,
     objeto: m.objeto || '—',
-    valorTexto: `O valor total é ${moeda.format(c.total)}, pago da seguinte forma: ${textoPagamento(m, c).toLowerCase()}.`,
+    valorTexto: `O valor total é ${moeda.format(c.total)}, pago da seguinte forma: ${minusculaInicial(textoPagamento(m, c))}.`,
     rescisao: m.rescisao || '—',
-    contrato,
   };
 }
 
 function nomeArquivo(m) {
   const base = `${m.tipo === 'contrato' ? 'contrato' : 'orcamento'}-${m.numero || 'sem-numero'}`;
-  return `${base}.pdf`.toLowerCase().replace(/[^a-z0-9.\-]+/g, '-');
+  return `${base}.pdf`.toLowerCase().replace(/[^a-z0-9.-]+/g, '-');
 }
 
-function onGerar() {
+function baixar(bytes, nome) {
+  const blob = new Blob([bytes], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nome;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+function poeira(origem) {
+  if (reduzMovimento()) return;
+  const r = origem.getBoundingClientRect();
+  const camada = document.createElement('div');
+  camada.className = 'explosao';
+  camada.setAttribute('aria-hidden', 'true');
+  camada.style.left = `${r.left + r.width / 2}px`;
+  camada.style.top = `${r.top + r.height / 2}px`;
+  for (let i = 0; i < 12; i++) {
+    const p = document.createElement('i');
+    const ang = (-150 + Math.random() * 120) * (Math.PI / 180);
+    const dist = 50 + Math.random() * 70;
+    p.style.setProperty('--tx', `${Math.cos(ang) * dist}px`);
+    p.style.setProperty('--ty', `${Math.sin(ang) * dist}px`);
+    p.style.setProperty('--d', `${Math.random() * 80}ms`);
+    if (i % 3 === 0) p.classList.add('menta');
+    camada.append(p);
+  }
+  document.body.append(camada);
+  setTimeout(() => camada.remove(), 1000);
+}
+
+async function produzirPdf(m) {
+  const c = calcular(m);
+  const fontes = await carregarFontes();
+  const bytes = gerarPdf(montarDocumento(m, c), fontes);
+  baixar(bytes, nomeArquivo(m));
+  return c;
+}
+
+async function onGerar() {
   const m = lerForm();
   const c = calcular(m);
   const erros = validar(m, c);
   marcarErros(erros);
   mostrarErros(erros);
   if (erros.length) {
-    setStatus('Ainda há pontos para corrigir. Veja a lista acima.');
-    const primeiro = erros.find((e) => e.el && e.el.focus);
-    if (primeiro) primeiro.el.focus();
+    toast('Ainda há pontos para corrigir. Veja a lista no formulário.', 'erro');
+    erros.find((e) => e.el)?.el.focus();
     return;
   }
 
   btnGerar.disabled = true;
-  setStatus('Renderizando PDF…');
-  setTimeout(() => {
-    try {
-      const bytes = gerarPdf(montarDocumento(m, c));
-      const blob = new Blob([bytes], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = nomeArquivo(m);
-      document.body.append(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 4000);
-      setStatus('PDF gerado. Confira o arquivo e envie ao cliente para assinatura.');
-    } catch (err) {
-      setStatus('Não foi possível gerar o PDF agora. Tente de novo ou revise os campos.');
-    } finally {
-      btnGerar.disabled = false;
-    }
-  }, 40);
+  btnGerar.classList.add('carregando');
+  const rotulo = $('.btn-rotulo', btnGerar);
+  const anterior = rotulo.textContent;
+  rotulo.textContent = 'Renderizando PDF…';
+  try {
+    await new Promise((r) => setTimeout(r, 60));
+    await produzirPdf(m);
+    const salvo = registrarNoHistorico(m, c);
+    $('#badge-status').textContent = 'PDF gerado';
+    $('#badge-status').dataset.estado = 'gerado';
+    poeira(btnGerar);
+    toast(salvo ? 'PDF gerado e guardado no histórico. Envie ao cliente para assinar.' : 'PDF gerado. Envie ao cliente para assinar.');
+  } catch (err) {
+    console.warn(err);
+    toast('Não foi possível gerar o PDF agora. Verifique a conexão e tente de novo.', 'erro');
+  } finally {
+    rotulo.textContent = anterior;
+    btnGerar.disabled = false;
+    btnGerar.classList.remove('carregando');
+  }
 }
 
+// ---------------------------------------------------------------------------
 // Eventos
+// ---------------------------------------------------------------------------
 form.addEventListener('input', (e) => {
-  if (e.target.matches('[name=qtd], [name=unit]')) atualizarSubtotais();
   if (e.target.getAttribute('aria-invalid')) e.target.removeAttribute('aria-invalid');
+  if (e.target.name === 'tipo') return;
   renderizar();
+  $('#badge-status').textContent = 'Rascunho';
+  $('#badge-status').dataset.estado = 'rascunho';
+  agendarRascunho();
 });
 
 form.addEventListener('change', (e) => {
-  if (e.target.name === 'tipo') atualizarTipo();
-  renderizar();
+  if (e.target.name === 'tipo') {
+    const campoNum = form.elements.numero;
+    const contrato = e.target.value === 'contrato';
+    campoNum.value = contrato ? campoNum.value.replace(/^ORC-/, 'CT-') : campoNum.value.replace(/^CT-/, 'ORC-');
+    atualizarTipo();
+    renderizar({ pulso: true });
+    agendarRascunho();
+  }
 });
 
 form.addEventListener('submit', (e) => {
@@ -384,26 +643,168 @@ form.addEventListener('submit', (e) => {
 });
 
 $('#add-item').addEventListener('click', () => {
-  novaLinha({ qtd: '1' });
-  renumerar();
+  const linha = novaLinha({ qtd: '1' }, true);
   renderizar();
-  $('[name=descricao]', itensBox.lastElementChild).focus();
+  agendarRascunho();
+  $('[name=descricao]', linha).focus();
 });
 
 itensBox.addEventListener('click', (e) => {
   const botao = e.target.closest('.remover');
   if (!botao) return;
-  botao.closest('.item').remove();
-  renumerar();
-  renderizar();
+  const linha = botao.closest('.item');
+  const sair = () => {
+    linha.remove();
+    renumerar();
+    renderizar();
+    agendarRascunho();
+  };
   $('#add-item').focus();
+  if (reduzMovimento()) sair();
+  else {
+    linha.classList.add('saindo');
+    renderizar();
+    setTimeout(sair, 220);
+  }
 });
 
 $('#restaurar').addEventListener('click', () => {
   preencher(EXEMPLO);
-  mostrarErros([]);
-  marcarErros([]);
-  setStatus('Exemplo restaurado.');
+  agendarRascunho();
+  toast('Exemplo restaurado.');
 });
 
-preencher(EXEMPLO);
+$('#novo').addEventListener('click', () => {
+  const tipo = form.elements.tipo.value;
+  const hoje = hojeISO();
+  preencher({
+    tipo,
+    empNome: form.elements.empNome.value || EXEMPLO.empNome,
+    empContato: form.elements.empContato.value || EXEMPLO.empContato,
+    cliNome: '',
+    cliDoc: '',
+    cliEmail: '',
+    cliTel: '',
+    numero: proximoNumero(tipo),
+    emissao: hoje,
+    validade: somarDias(hoje, 30),
+    itens: [{ descricao: '', qtd: '1', unit: '' }],
+    desconto: '',
+    pagamento: 'pix-vista',
+    prazo: '',
+    obs: '',
+    objeto: '',
+    rescisao: EXEMPLO.rescisao,
+  });
+  agendarRascunho();
+  $('#aviso-rascunho').hidden = true;
+  form.elements.cliNome.focus();
+  toast('Documento novo em branco. Os dados da sua empresa foram mantidos.');
+});
+
+$('#descartar').addEventListener('click', () => {
+  armazenamento.apagar(CHAVE_RASCUNHO);
+  preencher(EXEMPLO);
+  $('#aviso-rascunho').hidden = true;
+  $('#salvo').textContent = '';
+  toast('Rascunho descartado.');
+});
+
+$('#hist-lista').addEventListener('click', async (e) => {
+  const bt = e.target.closest('button[data-acao]');
+  if (!bt) return;
+  const li = bt.closest('.hist-item');
+  const hist = lerHistorico();
+  const entrada = hist.find((h) => h.id === li.dataset.id);
+  if (!entrada) return;
+  const acao = bt.dataset.acao;
+  if (acao === 'abrir') {
+    preencher(entrada.dados);
+    agendarRascunho();
+    $('#editor').focus();
+    $('#editor').scrollIntoView({ behavior: reduzMovimento() ? 'auto' : 'smooth', block: 'start' });
+    toast(`${entrada.numero} aberto para edição.`);
+  } else if (acao === 'baixar') {
+    try {
+      bt.disabled = true;
+      const m = { ...entrada.dados, itens: entrada.dados.itens.map((i) => ({ ...i })) };
+      await produzirPdf(m);
+      toast(`${entrada.numero} baixado de novo.`);
+    } catch (err) {
+      console.warn(err);
+      toast('Não foi possível gerar o PDF agora. Tente de novo.', 'erro');
+    } finally {
+      bt.disabled = false;
+    }
+  } else if (acao === 'excluir') {
+    armazenamento.gravar(
+      CHAVE_HISTORICO,
+      hist.filter((h) => h.id !== entrada.id)
+    );
+    renderizarHistorico();
+    toast(`${entrada.numero} removido do histórico.`);
+  }
+});
+
+$('#limpar-historico').addEventListener('click', () => {
+  armazenamento.apagar(CHAVE_HISTORICO);
+  renderizarHistorico();
+  toast('Histórico limpo.');
+});
+
+// Parallax sutil do palco no hero (só com ponteiro fino e sem redução de movimento)
+const palco = $('#palco');
+if (palco && window.matchMedia('(pointer: fine)').matches) {
+  let raf;
+  window.addEventListener('pointermove', (e) => {
+    if (reduzMovimento()) return;
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => {
+      const x = e.clientX / window.innerWidth - 0.5;
+      const y = e.clientY / window.innerHeight - 0.5;
+      palco.style.setProperty('--rx', `${(-y * 6).toFixed(2)}deg`);
+      palco.style.setProperty('--ry', `${(x * 8).toFixed(2)}deg`);
+    });
+  });
+}
+
+// Revela blocos ao rolar
+if ('IntersectionObserver' in window) {
+  const obs = new IntersectionObserver(
+    (entradas) => {
+      for (const en of entradas) {
+        if (en.isIntersecting) {
+          en.target.classList.add('visto');
+          obs.unobserve(en.target);
+        }
+      }
+    },
+    { threshold: 0.12 }
+  );
+  $$('.editor, .previa, .historico').forEach((el) => {
+    el.classList.add('revelar');
+    obs.observe(el);
+  });
+}
+
+// Início: recupera rascunho ou carrega o exemplo
+const rascunho = armazenamento.ler(CHAVE_RASCUNHO, null);
+if (rascunho?.dados) {
+  preencher(rascunho.dados);
+  $('#aviso-rascunho').hidden = false;
+  const quando = new Date(rascunho.salvoEm).toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  $('#salvo').textContent = `Rascunho de ${quando}`;
+  $('#salvo').classList.add('ok');
+} else {
+  preencher(EXEMPLO);
+}
+renderizarHistorico();
+document.documentElement.classList.add('pronto');
+
+// Pré-carrega as fontes do PDF em segundo plano
+carregarFontes().catch(() => {});
