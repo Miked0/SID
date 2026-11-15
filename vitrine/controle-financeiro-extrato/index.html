@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Controle financeiro por extrato · Demonstração · Solution Innova Digital</title>
+  <meta name="description" content="Demonstração de controle financeiro para pequenas empresas: importe o extrato em CSV e veja, em um quadro só, para onde vai o dinheiro.">
+  <meta name="theme-color" content="#2B0A57">
+  <link rel="canonical" href="https://solutioninnovadigital.com/vitrine/controle-financeiro-extrato/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fonts/big-shoulders-display-latin-832b15.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/manrope-latin-cf48e3.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/vitrine/controle-financeiro-extrato/assets/app.css">
+</head>
+<body>
+  <a class="pular" href="#principal">Pular para o conteúdo</a>
+
+  <header class="topo">
+    <div class="wrap topo-in">
+      <a class="marca" href="https://solutioninnovadigital.com/" aria-label="Solution Innova Digital, voltar ao site">
+        <img src="/favicon.svg" width="32" height="32" alt="">
+        <span>Solution Innova Digital</span>
+      </a>
+      <span class="rot-claro">Demonstração</span>
+    </div>
+  </header>
+
+  <main id="principal">
+    <section class="hero">
+      <div class="wrap">
+        <p class="tarja">Controle financeiro por extrato</p>
+        <h1>Para onde vai o dinheiro da sua empresa.</h1>
+        <p class="lead">Importe o extrato do banco em CSV. O sistema organiza cada saída em categorias e mostra, em um quadro só, onde o caixa está sendo gasto.</p>
+        <div class="acoes">
+          <button type="button" class="btn primary" id="btn-exemplo">Carregar extrato de exemplo</button>
+          <button type="button" class="btn ghost" id="btn-abrir-arquivo">Importar arquivo CSV</button>
+        </div>
+        <p class="nota">Esta é uma demonstração com dados fictícios. Nada é enviado a servidor: o arquivo fica só neste navegador.</p>
+      </div>
+    </section>
+
+    <section class="bloco importar" id="importar" aria-labelledby="t-importar">
+      <div class="wrap">
+        <div class="cab">
+          <p class="rot">Passo 1</p>
+          <h2 id="t-importar">Importar extrato</h2>
+        </div>
+
+        <div class="dropzone" id="dropzone">
+          <p class="dz-titulo">Arraste o CSV para cá</p>
+          <p class="dz-texto">Colunas <strong>Data</strong>, <strong>Descrição</strong> e <strong>Valor</strong>. Separador ponto e vírgula ou vírgula. Datas no formato DD/MM/AAAA.</p>
+          <button type="button" class="btn secondary" id="btn-selecionar">Selecionar arquivo</button>
+          <input type="file" id="arquivo" accept=".csv,text/csv" hidden>
+        </div>
+
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+
+        <details class="ajuda">
+          <summary>Como exportar o extrato do banco</summary>
+          <p>Na área de extratos do seu banco, procure por “Exportar” e escolha CSV ou planilha. Se o arquivo vier com outras colunas, renomeie o cabeçalho para Data, Descrição e Valor. Valores de saída podem vir com sinal de menos ou entre parênteses.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="bloco painel-wrap" aria-labelledby="t-vazio">
+      <div class="wrap">
+        <div class="vazio" id="vazio">
+          <h2 id="t-vazio">Nenhum extrato importado</h2>
+          <p>Carregue o exemplo ou importe um CSV para começar. Você verá quanto entrou, quanto saiu e para onde foi cada real.</p>
+        </div>
+
+        <div id="painel" hidden>
+          <p class="periodo" id="periodo"></p>
+
+          <div class="kpis" id="kpis" aria-live="polite"></div>
+
+          <div class="grade-2">
+            <section class="card destinos" aria-labelledby="t-destinos">
+              <div class="cab">
+                <p class="rot">Passo 2</p>
+                <h2 id="t-destinos">Para onde foi o dinheiro</h2>
+              </div>
+              <p class="destaque" id="destaque"></p>
+              <ol class="barras" id="barras"></ol>
+            </section>
+
+            <section class="card regra" aria-labelledby="t-regra">
+              <div class="cab">
+                <p class="rot">Passo 3</p>
+                <h2 id="t-regra">Ensinar uma regra</h2>
+              </div>
+              <p class="ajuda-texto">Escreva um trecho que aparece na descrição. Todas as transações que batem com ele recebem a categoria escolhida. Transações categorizadas à mão não são alteradas.</p>
+              <form id="form-regra" class="form-regra">
+                <div class="campo">
+                  <label for="regra-texto">Quando a descrição contiver</label>
+                  <input type="text" id="regra-texto" placeholder="Ex.: UBER, PIX CLIENTE" autocomplete="off" maxlength="40">
+                </div>
+                <div class="campo">
+                  <label for="regra-cat">Então categoria</label>
+                  <select id="regra-cat"></select>
+                </div>
+                <p class="previa" id="regra-previa" aria-live="polite">Digite pelo menos 3 letras.</p>
+                <button type="submit" class="btn primary" id="regra-aplicar" disabled>Aplicar regra</button>
+              </form>
+            </section>
+          </div>
+
+          <section class="card tabela-sec" aria-labelledby="t-transacoes">
+            <div class="cab">
+              <p class="rot">Passo 4</p>
+              <h2 id="t-transacoes">Transações</h2>
+            </div>
+            <div class="filtros" role="group" aria-label="Filtrar transações" id="filtros">
+              <button type="button" class="chip" data-filtro="todas" aria-pressed="true">Todas</button>
+              <button type="button" class="chip" data-filtro="sem" aria-pressed="false">Sem categoria</button>
+              <button type="button" class="chip" data-filtro="entradas" aria-pressed="false">Entradas</button>
+              <button type="button" class="chip" data-filtro="saidas" aria-pressed="false">Saídas</button>
+            </div>
+            <p class="contagem" id="contagem" aria-live="polite"></p>
+            <div class="tabela-wrap">
+              <table class="tabela">
+                <caption class="sr">Transações do extrato importado</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Data</th>
+                    <th scope="col">Descrição</th>
+                    <th scope="col">Categoria</th>
+                    <th scope="col" class="num">Valor</th>
+                    <th scope="col">Origem</th>
+                  </tr>
+                </thead>
+                <tbody id="corpo"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <div class="wrap rodape-in">
+      <p>Demonstração com dados fictícios. <strong>Solution Innova Digital</strong>: sites, sistemas e identidade visual para pequenos negócios.</p>
+      <a class="btn primary" href="https://wa.me/5511984774107?text=Ol%C3%A1!%20Vi%20a%20demonstra%C3%A7%C3%A3o%20de%20controle%20financeiro%20por%20extrato%20e%20quero%20conversar." target="_blank" rel="noopener">Quero um sistema assim</a>
+    </div>
+  </footer>
+
+  <script src="/vitrine/controle-financeiro-extrato/assets/app.js" defer></script>
+</body>
+</html>
