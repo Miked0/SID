@@ -4,7 +4,7 @@
 
 - Site: https://solutioninnovadigital.com/
 - Atendimento: presencial em São Paulo e online para todo o Brasil
-- WhatsApp: https://wa.me/5511984774107 (a primeira conversa é gratuita)
+- WhatsApp: https://wa.me/5511911963379 (a primeira conversa é gratuita)
 - Instagram: https://instagram.com/solutioninnovadigital
 - Pagamento: via Pix, conforme contrato
 - Versão para agentes: https://solutioninnovadigital.com/llms.txt
@@ -55,7 +55,8 @@ A SID cuida da parte digital de um pequeno negócio: site, marca, Instagram e si
 
 ## Contato
 
-- WhatsApp: https://wa.me/5511984774107
+- WhatsApp: https://wa.me/5511911963379
+- E-mail: contato@solutioninnovadigital.com
 - Instagram: https://instagram.com/solutioninnovadigital
 
 ## Institucional

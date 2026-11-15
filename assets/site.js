@@ -226,7 +226,7 @@
 
   /* ---------- Contato: WhatsApp com mensagem pronta ---------- */
   /* Coloque o número com DDI e DDD, só dígitos (ex.: 5511999999999). Enquanto estiver vazio, os botões abrem o Direct do Instagram. */
-  var WHATSAPP = '5511984774107'.replace(/\D/g, '');
+  var WHATSAPP = '5511911963379'.replace(/\D/g, '');
   document.querySelectorAll('.js-contato').forEach(function (b) {
     b.target = '_blank'; b.rel = 'noopener noreferrer';
     b.href = /^\d{10,15}$/.test(WHATSAPP)
