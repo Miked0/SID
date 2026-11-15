@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Controle de Estoque para Varejo · Demo | Solution Innova Digital</title>
+  <meta name="description" content="Demonstração de controle de estoque para varejo pequeno: painel, produtos, movimentações e alertas de reposição. Dados de exemplo.">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#17141D">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+  <a class="pular" href="#principal">Pular para o conteúdo</a>
+
+  <header class="topo">
+    <div class="topo-in">
+      <a class="marca" href="/" aria-label="Solution Innova Digital — voltar ao site">
+        <svg class="marca-simbolo" viewBox="230 470 288 210" aria-hidden="true" focusable="false">
+          <path d="M374,495 L500,655 L374,628 L250,655 Z" fill="#68E0BC"/>
+          <g fill="#6516BD"><path d="M374,538 C395,554 400,584 392,612 H356 C348,584 353,554 374,538 Z"/><path d="M357,586 L339,622 L361,615 Z"/><path d="M391,586 L409,622 L387,615 Z"/></g>
+          <circle cx="374" cy="572" r="9" fill="#68E0BC"/>
+        </svg>
+        <span class="marca-texto"><strong>Controle de Estoque</strong><small>Demo · Solution Innova Digital</small></span>
+      </a>
+      <nav class="abas" aria-label="Seções do sistema">
+        <button type="button" class="aba" data-aba="painel" aria-current="page">Painel</button>
+        <button type="button" class="aba" data-aba="produtos">Produtos</button>
+        <button type="button" class="aba" data-aba="alertas">Alertas <span class="contador-alerta" id="contador-alerta" aria-live="polite">0</span></button>
+      </nav>
+      <button type="button" class="btn btn-primario btn-compacto" data-abrir-movimento>Movimentar</button>
+    </div>
+  </header>
+
+  <main id="principal" class="principal">
+
+    <!-- PAINEL -->
+    <section class="secao ativa" id="sec-painel" data-secao="painel">
+      <div class="hero">
+        <p class="hero-marca">Estoque sob controle</p>
+        <h1 class="hero-titulo">Seu estoque guarda mais do que lembra</h1>
+        <p class="hero-texto">Entradas, saídas e alertas de reposição em um só lugar. Os dados abaixo são de exemplo.</p>
+        <div class="hero-acoes">
+          <button type="button" class="btn btn-menta" data-ir="alertas">Ver alertas de reposição</button>
+          <button type="button" class="btn btn-contorno" data-ir="produtos">Ver produtos</button>
+        </div>
+      </div>
+
+      <div class="metricas" id="metricas"></div>
+
+      <div class="grade-2">
+        <article class="bloco" aria-labelledby="t-mov">
+          <header class="bloco-cab">
+            <h2 id="t-mov" class="bloco-titulo">Movimentação recente</h2>
+          </header>
+          <ul class="lista-mov" id="lista-mov"></ul>
+        </article>
+
+        <article class="bloco" aria-labelledby="t-giro">
+          <header class="bloco-cab">
+            <h2 id="t-giro" class="bloco-titulo">Giro rápido · top 5</h2>
+            <span class="bloco-nota">saídas por mês</span>
+          </header>
+          <ol class="giro" id="giro"></ol>
+        </article>
+      </div>
+    </section>
+
+    <!-- PRODUTOS -->
+    <section class="secao" id="sec-produtos" data-secao="produtos" hidden>
+      <header class="cab-secao">
+        <h1 class="titulo-secao">Produtos</h1>
+        <p class="sub-secao" id="resumo-produtos"></p>
+      </header>
+
+      <div class="filtros">
+        <div class="campo campo-busca">
+          <label for="busca">Buscar por nome ou código</label>
+          <input id="busca" type="search" class="input" placeholder="Ex.: SKU-001 ou camiseta" autocomplete="off">
+        </div>
+        <div class="campo">
+          <label for="filtro-categoria">Categoria</label>
+          <select id="filtro-categoria" class="input">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="filtro-status">Situação</label>
+          <select id="filtro-status" class="input">
+            <option value="">Todas</option>
+            <option value="ok">Em dia</option>
+            <option value="baixo">Baixo</option>
+            <option value="critico">Crítico</option>
+            <option value="zerado">Zerado</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="tabela-wrap">
+        <table class="tabela" id="tabela-produtos">
+          <caption class="sr-only">Lista de produtos com estoque atual, mínimo, máximo e situação</caption>
+          <thead>
+            <tr>
+              <th scope="col"><button type="button" class="ordenar" data-ordenar="sku">Código</button></th>
+              <th scope="col"><button type="button" class="ordenar" data-ordenar="nome">Produto</button></th>
+              <th scope="col">Categoria</th>
+              <th scope="col" class="num"><button type="button" class="ordenar" data-ordenar="preco">Preço</button></th>
+              <th scope="col" class="num"><button type="button" class="ordenar" data-ordenar="estoque">Estoque</button></th>
+              <th scope="col" class="num">Mín / Máx</th>
+              <th scope="col">Situação</th>
+              <th scope="col"><span class="sr-only">Ações</span></th>
+            </tr>
+          </thead>
+          <tbody id="corpo-produtos"></tbody>
+        </table>
+        <p class="vazio" id="vazio-produtos" hidden>Nenhum produto encontrado com esses filtros.</p>
+      </div>
+    </section>
+
+    <!-- ALERTAS -->
+    <section class="secao" id="sec-alertas" data-secao="alertas" hidden>
+      <header class="cab-secao">
+        <h1 class="titulo-secao">Alertas de reposição</h1>
+        <p class="sub-secao">Produtos com estoque no mínimo ou abaixo dele. Ignorar some o alerta até o fim da sessão.</p>
+      </header>
+      <div id="lista-alertas" class="cartoes-alerta"></div>
+      <p class="vazio" id="vazio-alertas" hidden>Nenhum alerta no momento. Tudo dentro do mínimo.</p>
+    </section>
+  </main>
+
+  <!-- MODAL MOVIMENTAÇÃO -->
+  <dialog id="modal-mov" class="modal" aria-labelledby="modal-titulo">
+    <form id="form-mov" class="form-mov" novalidate>
+      <header class="modal-cab">
+        <h2 id="modal-titulo" class="modal-titulo">Nova movimentação</h2>
+        <button type="button" class="fechar" data-fechar aria-label="Fechar">×</button>
+      </header>
+
+      <div class="tipo-mov" role="radiogroup" aria-label="Tipo de movimentação">
+        <label class="tipo-opcao"><input type="radio" name="tipo" value="entrada" checked><span>Entrada</span></label>
+        <label class="tipo-opcao"><input type="radio" name="tipo" value="saida"><span>Saída</span></label>
+      </div>
+
+      <div class="campo">
+        <label for="mov-produto">Produto</label>
+        <select id="mov-produto" name="produto" class="input" required></select>
+        <p class="erro" id="erro-produto" hidden></p>
+      </div>
+
+      <div class="linha-2">
+        <div class="campo">
+          <label for="mov-qtd">Quantidade</label>
+          <input id="mov-qtd" name="qtd" type="number" class="input" min="1" step="1" inputmode="numeric" value="1" aria-describedby="ajuda-qtd erro-qtd">
+          <p class="ajuda" id="ajuda-qtd">Mínimo 1. Em saída, não pode passar do estoque atual.</p>
+          <p class="erro" id="erro-qtd" hidden></p>
+        </div>
+        <div class="campo">
+          <label for="mov-doc">Nota ou documento</label>
+          <input id="mov-doc" name="doc" type="text" class="input" maxlength="40" placeholder="Opcional">
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="mov-obs">Observação</label>
+        <textarea id="mov-obs" name="obs" class="input" rows="2" maxlength="140" placeholder="Ex.: reposição do fornecedor"></textarea>
+      </div>
+
+      <p class="resumo-mov" id="resumo-mov" aria-live="polite"></p>
+
+      <footer class="modal-rod">
+        <button type="button" class="btn btn-contorno" data-fechar>Cancelar</button>
+        <button type="submit" class="btn btn-primario">Confirmar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div class="avisos" id="avisos" role="status" aria-live="polite"></div>
+
+  <footer class="rodape">
+    <p>Demonstração com dados fictícios. Nenhuma informação é enviada a servidores.</p>
+    <p><button type="button" class="btn-texto" data-restaurar>Restaurar dados de exemplo</button></p>
+    <p><a href="/">Solution Innova Digital</a> · <a href="/#contato">Quero algo parecido para o meu negócio</a></p>
+  </footer>
+
+  <script src="assets/app.js" defer></script>
+</body>
+</html>
