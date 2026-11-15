@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orçamento e contrato em PDF · Solution Innova Digital</title>
+  <meta name="description" content="Demonstração de gerador de orçamento e contrato em PDF, feito no navegador com dados fictícios.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="pular" href="#editor">Pular para o formulário</a>
+
+  <header class="topo">
+    <div class="wrap topo-in">
+      <a class="marca" href="/" aria-label="Solution Innova Digital, voltar ao início">
+        <svg class="simbolo" viewBox="230 470 288 210" aria-hidden="true" focusable="false">
+          <path d="M374,495 L500,655 L374,628 L250,655 Z" fill="#68E0BC" stroke="#68E0BC" stroke-width="6" stroke-linejoin="round"/>
+          <path d="M374,538 C395,554 400,584 392,612 H356 C348,584 353,554 374,538 Z M357,586 L339,622 L361,615 Z M391,586 L409,622 L387,615 Z" fill="#6516BD"/>
+        </svg>
+        <span>Solution Innova Digital</span>
+      </a>
+      <span class="selo">Demonstração</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="intro wrap">
+      <h1>Orçamento e contrato em PDF</h1>
+      <p class="lead">Monte o documento, confira a prévia e baixe o PDF pronto para enviar ao cliente. Tudo acontece no seu navegador: nenhum dado sai do computador.</p>
+    </section>
+
+    <div class="wrap espaco">
+      <div class="area">
+        <form id="form" class="editor" novalidate>
+          <h2 id="editor">Dados do documento</h2>
+
+          <fieldset class="grupo">
+            <legend>Tipo de documento</legend>
+            <div class="segmentado">
+              <label><input type="radio" name="tipo" value="orcamento" checked><span>Orçamento</span></label>
+              <label><input type="radio" name="tipo" value="contrato"><span>Contrato</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset class="grupo">
+            <legend>Sua empresa</legend>
+            <div class="campos">
+              <div class="campo"><label for="emp-nome">Nome</label><input id="emp-nome" name="empNome" autocomplete="organization" required></div>
+              <div class="campo"><label for="emp-contato">Contato</label><input id="emp-contato" name="empContato" placeholder="WhatsApp, e-mail ou site"></div>
+            </div>
+          </fieldset>
+
+          <fieldset class="grupo">
+            <legend>Cliente</legend>
+            <div class="campos">
+              <div class="campo"><label for="cli-nome">Nome ou razão social</label><input id="cli-nome" name="cliNome" autocomplete="name" required placeholder="Ex.: Ana Ferreira"></div>
+              <div class="campo"><label for="cli-doc">CPF ou CNPJ</label><input id="cli-doc" name="cliDoc" inputmode="numeric" placeholder="123.456.789-00"></div>
+              <div class="campo"><label for="cli-email">E-mail</label><input id="cli-email" name="cliEmail" type="email" autocomplete="email" placeholder="cliente@exemplo.com"></div>
+              <div class="campo"><label for="cli-tel">Telefone</label><input id="cli-tel" name="cliTel" type="tel" autocomplete="tel" placeholder="(11) 90000-0000"></div>
+            </div>
+          </fieldset>
+
+          <fieldset class="grupo">
+            <legend>Número e datas</legend>
+            <div class="campos tres">
+              <div class="campo"><label for="numero">Número</label><input id="numero" name="numero" required></div>
+              <div class="campo"><label for="emissao">Emissão</label><input id="emissao" name="emissao" type="date" required></div>
+              <div class="campo"><label for="validade">Válido até</label><input id="validade" name="validade" type="date"></div>
+            </div>
+          </fieldset>
+
+          <fieldset class="grupo">
+            <legend>Itens</legend>
+            <p class="ajuda">Preencha descrição, quantidade e valor unitário. O subtotal é calculado sozinho.</p>
+            <div id="itens" class="itens"></div>
+            <button type="button" id="add-item" class="btn-secundario">Adicionar item</button>
+          </fieldset>
+
+          <fieldset class="grupo">
+            <legend>Condições</legend>
+            <div class="campos">
+              <div class="campo"><label for="desconto">Desconto (%)</label><input id="desconto" name="desconto" inputmode="decimal" placeholder="0"></div>
+              <div class="campo"><label for="pagamento">Forma de pagamento</label>
+                <select id="pagamento" name="pagamento">
+                  <option value="pix-vista">Pix à vista</option>
+                  <option value="pix-2">Pix em 2 parcelas iguais</option>
+                  <option value="pix-3">Pix em 3 parcelas iguais</option>
+                </select>
+              </div>
+              <div class="campo cheio"><label for="prazo">Prazo</label><input id="prazo" name="prazo" placeholder="Ex.: 15 dias úteis após aprovação"></div>
+              <div class="campo cheio"><label for="obs">Observações</label><textarea id="obs" name="obs" rows="3"></textarea></div>
+            </div>
+          </fieldset>
+
+          <fieldset id="campos-contrato" class="grupo" hidden>
+            <legend>Cláusulas do contrato</legend>
+            <div class="campos">
+              <div class="campo cheio"><label for="objeto">Objeto</label><textarea id="objeto" name="objeto" rows="3"></textarea></div>
+              <div class="campo cheio"><label for="rescisao">Rescisão</label><textarea id="rescisao" name="rescisao" rows="3"></textarea></div>
+            </div>
+          </fieldset>
+
+          <div id="erros" class="erros" role="alert" hidden></div>
+
+          <div class="acoes">
+            <button type="button" id="restaurar" class="btn-secundario">Restaurar exemplo</button>
+            <button type="submit" id="gerar" class="btn-primario">Gerar PDF</button>
+          </div>
+          <p id="status" class="status" role="status" aria-live="polite"></p>
+        </form>
+
+        <section class="previa" aria-labelledby="previa-titulo">
+          <h2 id="previa-titulo">Prévia</h2>
+          <p class="ajuda">Atualiza enquanto você digita.</p>
+
+          <article class="papel" id="papel">
+            <header class="papel-topo">
+              <svg class="simbolo" viewBox="230 470 288 210" aria-hidden="true" focusable="false">
+                <path d="M374,495 L500,655 L374,628 L250,655 Z" fill="#68E0BC" stroke="#68E0BC" stroke-width="6" stroke-linejoin="round"/>
+                <path d="M374,538 C395,554 400,584 392,612 H356 C348,584 353,554 374,538 Z M357,586 L339,622 L361,615 Z M391,586 L409,622 L387,615 Z" fill="#6516BD"/>
+              </svg>
+              <div class="papel-tit">
+                <p class="p-marca">Solution Innova Digital</p>
+                <h3 id="p-titulo">Orçamento</h3>
+              </div>
+              <dl class="p-meta">
+                <div><dt>Número</dt><dd id="p-numero">—</dd></div>
+                <div><dt>Emissão</dt><dd id="p-emissao">—</dd></div>
+                <div><dt>Validade</dt><dd id="p-validade">—</dd></div>
+              </dl>
+            </header>
+
+            <div class="p-partes">
+              <div>
+                <h4>Emitente</h4>
+                <p class="p-forte" id="p-emp-nome">—</p>
+                <p id="p-emp-contato"></p>
+              </div>
+              <div>
+                <h4>Cliente</h4>
+                <p class="p-forte" id="p-cli-nome">—</p>
+                <p id="p-cli-doc"></p>
+                <p id="p-cli-email"></p>
+                <p id="p-cli-tel"></p>
+              </div>
+            </div>
+
+            <div class="p-tabela-wrap">
+              <table class="p-tabela">
+                <thead><tr><th scope="col">Descrição</th><th scope="col" class="n">Qtd</th><th scope="col" class="n">Unit.</th><th scope="col" class="n">Subtotal</th></tr></thead>
+                <tbody id="p-itens"></tbody>
+              </table>
+            </div>
+
+            <dl class="p-totais">
+              <div><dt>Subtotal</dt><dd id="p-subtotal">—</dd></div>
+              <div id="p-desc-linha" hidden><dt id="p-desc-rotulo">Desconto</dt><dd id="p-desc">—</dd></div>
+              <div class="p-total"><dt>Total</dt><dd id="p-total">—</dd></div>
+            </dl>
+
+            <div class="p-cond">
+              <h4>Condições</h4>
+              <p><strong>Pagamento:</strong> <span id="p-pagamento">—</span></p>
+              <p><strong>Prazo:</strong> <span id="p-prazo">—</span></p>
+              <p id="p-obs"></p>
+            </div>
+
+            <div id="p-contrato" class="p-cond" hidden>
+              <h4>Cláusulas</h4>
+              <ol class="p-clausulas">
+                <li><strong>Objeto.</strong> <span id="p-objeto"></span></li>
+                <li><strong>Valor e pagamento.</strong> <span id="p-valor"></span></li>
+                <li><strong>Prazo.</strong> <span id="p-prazo2"></span></li>
+                <li><strong>Rescisão.</strong> <span id="p-rescisao"></span></li>
+                <li><strong>Foro.</strong> Fica eleito o foro da comarca do domicílio do contratante.</li>
+              </ol>
+            </div>
+
+            <div class="p-assin">
+              <div><span class="linha-assin"></span><p id="p-ass1">Emitente</p></div>
+              <div><span class="linha-assin"></span><p id="p-ass2">Cliente (aceite)</p></div>
+            </div>
+          </article>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="wrap rodape">
+    <p>Modelo de demonstração com dados fictícios. Não substitui revisão jurídica. O PDF é montado no seu navegador, sem envio de dados a servidores.</p>
+  </footer>
+
+  <template id="tpl-item">
+    <div class="item">
+      <div class="campo"><span class="rotulo-item">Descrição</span><input name="descricao" aria-label="Descrição do item" autocomplete="off" placeholder="Ex.: Site institucional"></div>
+      <div class="campo"><span class="rotulo-item">Qtd</span><input name="qtd" aria-label="Quantidade" inputmode="decimal" value="1"></div>
+      <div class="campo"><span class="rotulo-item">Valor unit. (R$)</span><input name="unit" aria-label="Valor unitário em reais" inputmode="decimal" placeholder="0,00"></div>
+      <output class="sub" name="sub">R$ 0,00</output>
+      <button type="button" class="remover" aria-label="Remover item">×</button>
+    </div>
+  </template>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
