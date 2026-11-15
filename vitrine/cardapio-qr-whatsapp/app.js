@@ -1,6 +1,7 @@
 /* Cardápio digital com QR code e pedido pelo WhatsApp: demonstração SID.
-   Dados de exemplo. Nenhum pedido é enviado a servidor: o pedido vira uma
-   mensagem pronta em um link wa.me, e quem envia é quem toca no botão. */
+   Dados de exemplo. Nenhum pedido sai da página sem o toque de quem pede:
+   o pedido vira uma mensagem pronta em um link wa.me. O carrinho fica salvo
+   só neste navegador (localStorage), por mesa. */
 (function () {
   'use strict';
 
@@ -47,14 +48,21 @@
 
   var SVG_NS = 'http://www.w3.org/2000/svg';
   var moeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+  var reduzirMovimento = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var carrinho = new Map(); // id -> quantidade
-  var indice = {};          // id -> { item, categoria, refs }
+  var indice = {};          // id -> { item, categoria, li, saida, menos, mais }
   var mesa = lerMesa();
+  var chaveSalva = 'sid-demo-cardapio-mesa-' + mesa;
+  var filtroVegano = false;
+  var termoBusca = '';
 
   var el = {
     categorias: document.getElementById('categorias'),
     secoes: document.getElementById('secoes'),
     mesaAtual: document.getElementById('mesa-atual'),
+    busca: document.getElementById('busca'),
+    filtroVegano: document.getElementById('filtro-vegano'),
+    semResultado: document.getElementById('sem-resultado'),
     barra: document.getElementById('barra-pedido'),
     resumoQtd: document.getElementById('resumo-qtd'),
     resumoTotal: document.getElementById('resumo-total'),
@@ -69,6 +77,9 @@
     nome: document.getElementById('campo-nome'),
     obs: document.getElementById('campo-obs'),
     enviar: document.getElementById('enviar-pedido'),
+    imprimir: document.getElementById('imprimir-comanda'),
+    limpar: document.getElementById('limpar-pedido'),
+    comanda: document.getElementById('comanda'),
     confirmado: document.getElementById('confirmado')
   };
 
@@ -76,7 +87,7 @@
     try {
       var valor = new URLSearchParams(window.location.search).get('mesa');
       if (valor && /^[A-Za-z0-9-]{1,12}$/.test(valor)) return valor;
-    } catch (e) { /* navegador sem URLSearchParams: usa a mesa padrão */ }
+    } catch (e) { /* sem URLSearchParams: usa a mesa padrão */ }
     return CONFIG.mesaPadrao;
   }
 
@@ -99,13 +110,11 @@
     return svg;
   }
 
-  function precoDe(item) { return item.preco; }
-
   function resumoTotais() {
     var qtd = 0, total = 0;
     carrinho.forEach(function (n, id) {
       qtd += n;
-      total += n * precoDe(indice[id].item);
+      total += n * indice[id].item.preco;
     });
     return { qtd: qtd, total: total };
   }
@@ -166,8 +175,8 @@
     var mais = criarEl('button', null, '+');
     mais.type = 'button';
     mais.setAttribute('aria-label', 'Adicionar um ' + item.nome);
-    menos.addEventListener('click', function () { alterar(item.id, -1, saida, li); });
-    mais.addEventListener('click', function () { alterar(item.id, 1, saida, li); });
+    menos.addEventListener('click', function () { alterar(item.id, -1, mais); });
+    mais.addEventListener('click', function () { alterar(item.id, 1, mais); });
     stepper.appendChild(menos);
     stepper.appendChild(saida);
     stepper.appendChild(mais);
@@ -181,17 +190,43 @@
     return li;
   }
 
-  function alterar(id, delta, saida, li) {
+  function alterar(id, delta, botao) {
     var atual = carrinho.get(id) || 0;
     var novo = Math.max(0, Math.min(CONFIG.qtdMax, atual + delta));
     if (novo === atual) return;
     if (novo === 0) carrinho.delete(id); else carrinho.set(id, novo);
     atualizarItem(id);
     atualizarPedido();
-    if (delta > 0 && li) {
-      li.classList.remove('pulsa');
-      void li.offsetWidth; // reinicia a animação
-      li.classList.add('pulsa');
+    if (delta > 0) {
+      pulsar(indice[id].li);
+      if (botao) particulas(botao);
+    }
+  }
+
+  function pulsar(li) {
+    li.classList.remove('pulsa');
+    void li.offsetWidth; // reinicia a animação
+    li.classList.add('pulsa');
+  }
+
+  // Partículas "poeira de projetor" saindo do + até a barra do pedido (DS 7.1)
+  function particulas(origem) {
+    if (reduzirMovimento || !origem || !el.barra || el.barra.hidden) return;
+    var a = origem.getBoundingClientRect();
+    var b = el.resumoTotal.getBoundingClientRect();
+    var x0 = a.left + a.width / 2, y0 = a.top + a.height / 2;
+    var x1 = b.left + b.width / 2, y1 = b.top + b.height / 2;
+    for (var i = 0; i < 8; i++) {
+      var p = criarEl('span', 'particula');
+      var dx = (x1 - x0) + (Math.random() - 0.5) * 60;
+      var dy = (y1 - y0) + (Math.random() - 0.5) * 40;
+      p.style.left = x0 + 'px';
+      p.style.top = y0 + 'px';
+      p.style.setProperty('--tx', dx + 'px');
+      p.style.setProperty('--ty', dy + 'px');
+      p.style.animationDelay = (i * 25) + 'ms';
+      document.body.appendChild(p);
+      p.addEventListener('animationend', function (e) { e.target.remove(); });
     }
   }
 
@@ -202,23 +237,56 @@
     r.li.classList.toggle('no-pedido', qtd > 0);
     r.menos.disabled = qtd === 0 || r.item.indisponivel;
     r.mais.disabled = qtd >= CONFIG.qtdMax || r.item.indisponivel;
-    r.saida.setAttribute('aria-label', qtd + ' no pedido');
   }
 
+  /* ----- Busca e filtro ----- */
+  function aplicarFiltros() {
+    var termo = termoBusca.trim().toLowerCase();
+    var visiveis = 0;
+    CARDAPIO.forEach(function (cat) {
+      var secao = document.getElementById('secao-' + cat.id);
+      var n = 0;
+      cat.itens.forEach(function (item) {
+        var texto = (item.nome + ' ' + item.desc).toLowerCase();
+        var ok = (!termo || texto.indexOf(termo) !== -1) && (!filtroVegano || (item.tags || []).indexOf('vegano') !== -1);
+        indice[item.id].li.hidden = !ok;
+        if (ok) n++;
+      });
+      secao.hidden = n === 0;
+      visiveis += n;
+    });
+    el.semResultado.hidden = visiveis > 0;
+  }
+
+  el.busca.addEventListener('input', function () { termoBusca = el.busca.value; aplicarFiltros(); });
+  el.filtroVegano.addEventListener('click', function () {
+    filtroVegano = !filtroVegano;
+    el.filtroVegano.setAttribute('aria-pressed', String(filtroVegano));
+    el.filtroVegano.classList.toggle('ativo', filtroVegano);
+    aplicarFiltros();
+  });
+
   /* ----- Pedido ----- */
-  function atualizarPedido() {
+  function atualizarPedido(opcoes) {
     var t = resumoTotais();
-    var txt = rotuloItens(t.qtd);
-    el.resumoQtd.textContent = txt;
+    el.resumoQtd.textContent = rotuloItens(t.qtd);
     el.resumoTotal.textContent = moeda.format(t.total / 100);
     el.totalItens.textContent = String(t.qtd);
     el.totalPedido.textContent = moeda.format(t.total / 100);
     el.barra.hidden = t.qtd === 0;
     document.body.classList.toggle('tem-pedido', t.qtd > 0);
     el.vazio.hidden = t.qtd > 0;
+    el.imprimir.disabled = t.qtd === 0;
+    el.limpar.disabled = t.qtd === 0;
     renderLinhas();
     atualizarEnvio(t);
+    guardar();
     if (t.qtd === 0) fecharPedido(false);
+    if (!(opcoes && opcoes.semPulso) && !reduzirMovimento) {
+      el.barra.classList.remove('bate');
+      void el.barra.offsetWidth;
+      el.barra.classList.add('bate');
+    }
   }
 
   function renderLinhas() {
@@ -250,13 +318,20 @@
       var remover = criarEl('button', 'remover', 'Remover do pedido');
       remover.type = 'button';
       remover.addEventListener('click', function () {
-        carrinho.delete(id);
-        atualizarItem(id);
-        atualizarPedido();
+        // Dissolução (DS 7.2): a linha some antes de o pedido ser atualizado
+        if (reduzirMovimento) { tirar(id); return; }
+        li.classList.add('saindo');
+        setTimeout(function () { tirar(id); }, 300);
       });
       li.appendChild(remover);
       el.itens.appendChild(li);
     });
+  }
+
+  function tirar(id) {
+    carrinho.delete(id);
+    atualizarItem(id);
+    atualizarPedido({ semPulso: true });
   }
 
   function montarMensagem() {
@@ -289,12 +364,86 @@
     el.enviar.setAttribute('aria-disabled', 'false');
   }
 
-  function avisarEnvio() {
-    el.confirmado.textContent = 'Pedido aberto no WhatsApp. Confirme o envio por lá. Se a janela não abrir, toque no botão de novo.';
+  function avisar(texto) {
+    el.confirmado.textContent = texto;
     el.confirmado.hidden = false;
-    clearTimeout(avisarEnvio.timer);
-    avisarEnvio.timer = setTimeout(function () { el.confirmado.hidden = true; }, 7000);
+    clearTimeout(avisar.timer);
+    avisar.timer = setTimeout(function () { el.confirmado.hidden = true; }, 7000);
   }
+
+  /* ----- Persistência por mesa (só neste navegador) ----- */
+  function guardar() {
+    try {
+      var dados = {
+        itens: Array.from(carrinho.entries()),
+        nome: el.nome.value,
+        obs: el.obs.value
+      };
+      if (carrinho.size === 0 && !dados.nome && !dados.obs) localStorage.removeItem(chaveSalva);
+      else localStorage.setItem(chaveSalva, JSON.stringify(dados));
+    } catch (e) { /* navegador privado ou sem armazenamento: segue sem salvar */ }
+  }
+
+  function restaurar() {
+    try {
+      var bruto = localStorage.getItem(chaveSalva);
+      if (!bruto) return false;
+      var dados = JSON.parse(bruto);
+      var entrou = false;
+      (dados.itens || []).forEach(function (par) {
+        var id = par[0], qtd = par[1];
+        if (indice[id] && !indice[id].item.indisponivel && qtd > 0) {
+          carrinho.set(id, Math.min(CONFIG.qtdMax, Number(qtd) || 1));
+          entrou = true;
+        }
+      });
+      el.nome.value = typeof dados.nome === 'string' ? dados.nome.slice(0, 40) : '';
+      el.obs.value = typeof dados.obs === 'string' ? dados.obs.slice(0, 240) : '';
+      return entrou;
+    } catch (e) { return false; }
+  }
+
+  /* ----- Limpar e imprimir ----- */
+  el.limpar.addEventListener('click', function () {
+    carrinho.forEach(function (q, id) { indice[id].saida.textContent = '0'; });
+    carrinho.clear();
+    Object.keys(indice).forEach(atualizarItem);
+    el.nome.value = '';
+    el.obs.value = '';
+    atualizarPedido({ semPulso: true });
+    avisar('Pedido limpo.');
+  });
+
+  function montarComanda() {
+    var c = el.comanda;
+    c.textContent = '';
+    c.appendChild(criarEl('h2', 'comanda-titulo', CONFIG.restaurante));
+    c.appendChild(criarEl('p', 'comanda-meta', 'Mesa ' + mesa));
+    var hora = new Date();
+    c.appendChild(criarEl('p', 'comanda-meta', hora.toLocaleDateString('pt-BR') + ' · ' + hora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })));
+    var nome = el.nome.value.trim();
+    if (nome) c.appendChild(criarEl('p', 'comanda-meta', 'Cliente: ' + nome));
+    var lista = criarEl('ul', 'comanda-itens');
+    carrinho.forEach(function (qtd, id) {
+      var item = indice[id].item;
+      var li = criarEl('li');
+      li.appendChild(criarEl('span', 'comanda-qtd', qtd + 'x'));
+      li.appendChild(criarEl('span', 'comanda-nome', item.nome));
+      li.appendChild(criarEl('span', 'comanda-val', moeda.format(qtd * item.preco / 100)));
+      lista.appendChild(li);
+    });
+    c.appendChild(lista);
+    c.appendChild(criarEl('p', 'comanda-total', 'Total ' + moeda.format(resumoTotais().total / 100)));
+    var obs = el.obs.value.trim();
+    if (obs) c.appendChild(criarEl('p', 'comanda-obs', 'Obs.: ' + obs));
+    c.appendChild(criarEl('p', 'comanda-rodape', 'Demonstração · dados de exemplo'));
+  }
+
+  el.imprimir.addEventListener('click', function () {
+    if (resumoTotais().qtd === 0) return;
+    montarComanda();
+    window.print();
+  });
 
   /* ----- Painel do pedido ----- */
   var ultimoFoco = null;
@@ -345,10 +494,10 @@
   el.veu.addEventListener('click', function () { fecharPedido(); });
   el.enviar.addEventListener('click', function (e) {
     if (resumoTotais().qtd === 0) { e.preventDefault(); return; }
-    avisarEnvio();
+    avisar('Pedido aberto no WhatsApp. Confirme o envio por lá. Se a janela não abrir, toque no botão de novo.');
   });
-  el.nome.addEventListener('input', function () { atualizarEnvio(resumoTotais()); });
-  el.obs.addEventListener('input', function () { atualizarEnvio(resumoTotais()); });
+  el.nome.addEventListener('input', function () { atualizarEnvio(resumoTotais()); guardar(); });
+  el.obs.addEventListener('input', function () { atualizarEnvio(resumoTotais()); guardar(); });
 
   /* ----- Destaque da categoria atual ----- */
   function acompanharCategorias() {
@@ -371,8 +520,7 @@
   /* ----- Movimento de entrada (só com JS e sem pedido de movimento reduzido) ----- */
   function iniciarMovimento() {
     var root = document.documentElement;
-    var reduzir = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduzir || !('IntersectionObserver' in window)) return;
+    if (reduzirMovimento || !('IntersectionObserver' in window)) return;
     root.classList.add('js');
 
     Array.prototype.forEach.call(document.querySelectorAll('.hero .linha > span'), function (s, i) {
@@ -391,7 +539,11 @@
   /* ----- Início ----- */
   el.mesaAtual.textContent = 'Mesa ' + mesa;
   montarCardapio();
-  atualizarPedido();
+  var restaurou = restaurar();
+  Object.keys(indice).forEach(atualizarItem);
+  atualizarPedido({ semPulso: true });
+  if (restaurou) avisar('Retomamos o pedido desta mesa, salvo neste navegador.');
+  aplicarFiltros();
   acompanharCategorias();
   iniciarMovimento();
 }());

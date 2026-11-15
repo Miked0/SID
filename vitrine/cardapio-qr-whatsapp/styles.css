@@ -290,3 +290,50 @@ a { color: inherit; }
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   .js .hero .linha > span, .js .qr-cartao, .js .reveal { opacity: 1; transform: none; }
 }
+
+/* ===== Acabamento da versão de teste ===== */
+[hidden] { display: none !important; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* Busca e filtro */
+.ferramentas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+#busca { flex: 1 1 220px; min-height: 48px; padding: 12px 14px; font: 500 16px/1.4 var(--texto); background: var(--branco); color: var(--tinta); border: 2px solid var(--filete); border-radius: 0; }
+#busca:focus { outline: none; border-color: var(--roxo); }
+.chip { min-height: 48px; padding: 0 16px; font: 800 13px/1 var(--texto); letter-spacing: .06em; text-transform: uppercase; background: var(--branco); color: var(--roxo); border: 2px solid var(--roxo); cursor: pointer; transition: background .25s var(--ease), color .25s var(--ease); }
+.chip:hover { background: var(--nevoa); }
+.chip.ativo, .chip[aria-pressed="true"] { background: var(--roxo); color: var(--branco); }
+.sem-resultado { margin-top: 20px; color: var(--tinta-2); }
+
+/* Ações secundárias do pedido */
+.acoes-secundarias { display: flex; justify-content: space-between; gap: 12px; }
+.link-btn { min-height: 40px; padding: 0 2px; border: 0; background: none; color: var(--roxo); font: 700 14px/1 var(--texto); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+.link-btn:disabled { color: #A59DB5; cursor: not-allowed; text-decoration: none; }
+
+/* Pulso ao adicionar à barra */
+.barra-pedido.bate .resumo strong { animation: bate .45s var(--ease); }
+@keyframes bate { 40% { transform: scale(1.18); color: var(--menta); } }
+
+/* Partículas "poeira de projetor" */
+.particula { position: fixed; width: 7px; height: 7px; border-radius: 50%; background: var(--menta); pointer-events: none; z-index: 80; animation: particula .6s var(--ease) forwards; }
+@keyframes particula { 0% { transform: translate(0, 0) scale(1); opacity: .95; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
+
+/* Varredura do QR ao entrar */
+.qr-cartao { position: relative; }
+.js.pronto .qr-cartao::after { content: ""; position: absolute; left: 22px; right: 22px; top: 22px; height: 3px; background: var(--menta); box-shadow: 0 0 12px var(--menta); opacity: 0; animation: varre-qr 1.6s var(--ease) .9s 2; }
+@keyframes varre-qr { 0% { opacity: 0; transform: translateY(0); } 15% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; transform: translateY(260px); } }
+
+/* Comanda para impressão térmica 80 mm (DS 11.1). Fica oculta na tela. */
+.comanda { display: none; }
+@media print {
+  @page { margin: 3mm; size: 80mm auto; }
+  body { background: #fff; color: #000; }
+  body > *:not(#comanda) { display: none !important; }
+  .comanda { display: block !important; width: 72mm; margin: 0; padding: 2mm; font: 10pt/1.4 'Manrope', Arial, sans-serif; color: #000; background: #fff; }
+  .comanda-titulo { font: 900 16pt/1 'Big Shoulders Display', Arial Narrow, sans-serif; text-transform: uppercase; text-align: center; border-bottom: 2px solid #000; padding-bottom: 3mm; margin: 0 0 3mm; }
+  .comanda-meta { font-size: 9pt; margin: 1mm 0; }
+  .comanda-itens { list-style: none; margin: 3mm 0; padding: 0; border-top: 1px dashed #000; }
+  .comanda-itens li { display: grid; grid-template-columns: 9mm 1fr auto; gap: 2mm; padding: 2mm 0; border-bottom: 1px dashed #000; font-weight: 700; }
+  .comanda-total { font: 900 13pt/1 'Big Shoulders Display', Arial Narrow, sans-serif; text-align: right; margin: 2mm 0; }
+  .comanda-obs { font-size: 9pt; border-left: 2px solid #000; padding-left: 2mm; }
+  .comanda-rodape { font-size: 8pt; text-align: center; margin-top: 3mm; border-top: 1px dashed #000; padding-top: 2mm; }
+}
