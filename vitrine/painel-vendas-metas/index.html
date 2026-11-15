@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel de Vendas e Metas · Solution Innova Digital</title>
+  <meta name="description" content="Exemplo de painel de vendas e metas da Solution Innova Digital: junta planilhas de lojas e mostra os números da semana. Dados fictícios.">
+  <meta name="theme-color" content="#2B0A57">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/fonts.css">
+  <link rel="stylesheet" href="assets/app.css">
+  <link rel="preload" href="/fonts/big-shoulders-display-latin-832b15.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/manrope-latin-cf48e3.woff2" as="font" type="font/woff2" crossorigin>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo principal</a>
+
+  <header class="topo">
+    <div class="topo-marca">
+      <img src="assets/sid-simbolo.svg" alt="" width="36" height="26" class="simbolo">
+      <div>
+        <p class="rot">Solution Innova Digital</p>
+        <h1 class="titulo">Painel de vendas e metas</h1>
+      </div>
+    </div>
+    <p class="tarja">Exemplo · dados fictícios</p>
+  </header>
+
+  <main id="conteudo" class="wrap">
+
+    <section class="barra" aria-label="Filtros">
+      <div class="campo">
+        <label for="filtro-loja">Loja</label>
+        <select id="filtro-loja">
+          <option value="todas">Todas as lojas (consolidado)</option>
+          <option value="sp">SP · Jardins</option>
+          <option value="rj">RJ · Ipanema</option>
+          <option value="mg">MG · Savassi</option>
+          <option value="rs">RS · Moinhos</option>
+        </select>
+      </div>
+      <div class="campo">
+        <span class="campo-rotulo" id="rot-periodo">Período</span>
+        <div class="segmento" role="group" aria-labelledby="rot-periodo">
+          <button type="button" class="seg" aria-pressed="false" data-periodo="hoje">Hoje</button>
+          <button type="button" class="seg" aria-pressed="true" data-periodo="semana">Semana</button>
+          <button type="button" class="seg" aria-pressed="false" data-periodo="mes">Mês</button>
+        </div>
+      </div>
+      <p class="data-atual" id="data-atual"></p>
+    </section>
+
+    <section class="fontes" aria-labelledby="t-fontes">
+      <div class="fontes-cab">
+        <h2 id="t-fontes" class="h3">Planilhas conectadas</h2>
+        <button type="button" class="btn btn-secundario" id="btn-sincronizar">Sincronizar agora</button>
+      </div>
+      <ul class="fontes-lista">
+        <li><span class="ponto ok" aria-hidden="true"></span><strong>Vendas SP · Jardins</strong><span class="meta">Atualizada há 15 min</span></li>
+        <li><span class="ponto ok" aria-hidden="true"></span><strong>Vendas RJ · Ipanema</strong><span class="meta">Atualizada há 32 min</span></li>
+        <li><span class="ponto ok" aria-hidden="true"></span><strong>Vendas MG · Savassi</strong><span class="meta">Atualizada hoje, 08:10</span></li>
+        <li><span class="ponto atencao" aria-hidden="true"></span><strong>Vendas RS · Moinhos</strong><span class="meta">Sem atualização há 2 dias</span></li>
+      </ul>
+    </section>
+
+    <section class="kpis" aria-label="Indicadores da semana">
+      <article class="kpi kpi-destaque" id="kpi-fat">
+        <p class="kpi-rotulo">Faturamento da semana</p>
+        <p class="kpi-valor" data-valor>—</p>
+        <p class="kpi-delta" data-delta>—</p>
+      </article>
+      <article class="kpi" id="kpi-ticket">
+        <p class="kpi-rotulo">Ticket médio</p>
+        <p class="kpi-valor" data-valor>—</p>
+        <p class="kpi-delta" data-delta>—</p>
+      </article>
+      <article class="kpi" id="kpi-conv">
+        <p class="kpi-rotulo">Conversão</p>
+        <p class="kpi-valor" data-valor>—</p>
+        <p class="kpi-delta" data-delta>—</p>
+      </article>
+      <article class="kpi kpi-meta" id="kpi-meta">
+        <p class="kpi-rotulo">Meta da semana</p>
+        <p class="kpi-valor" data-valor>—</p>
+        <div class="barra-meta" role="progressbar" aria-label="Progresso da meta semanal" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <span class="barra-meta-preench" data-preench></span>
+        </div>
+        <p class="kpi-delta" data-delta>—</p>
+      </article>
+    </section>
+
+    <div class="grade">
+
+      <section class="painel grande" aria-labelledby="t-semana">
+        <div class="painel-cab">
+          <div>
+            <h2 id="t-semana" class="h2">Faturamento dia a dia</h2>
+            <p class="apoio">Semana atual (linha roxa) contra a semana anterior (linha tracejada)</p>
+          </div>
+        </div>
+        <div class="grafico" id="grafico-semana"></div>
+        <ul class="legenda" aria-hidden="true">
+          <li><span class="sw sw-atual"></span>Semana atual</li>
+          <li><span class="sw sw-anterior"></span>Semana anterior</li>
+        </ul>
+      </section>
+
+      <section class="painel" aria-labelledby="t-alertas">
+        <div class="painel-cab">
+          <h2 id="t-alertas" class="h2">Alertas de meta</h2>
+        </div>
+        <div id="alertas" class="alertas" aria-live="polite"></div>
+      </section>
+
+      <section class="painel" aria-labelledby="t-lojas">
+        <div class="painel-cab">
+          <h2 id="t-lojas" class="h2">Metas por loja</h2>
+        </div>
+        <ul class="bullets" id="bullets"></ul>
+      </section>
+
+      <section class="painel" aria-labelledby="t-funil">
+        <div class="painel-cab">
+          <h2 id="t-funil" class="h2">Funil de vendas</h2>
+          <p class="apoio" id="funil-sub"></p>
+        </div>
+        <ol class="funil" id="funil"></ol>
+      </section>
+
+      <section class="painel" aria-labelledby="t-ranking">
+        <div class="painel-cab">
+          <h2 id="t-ranking" class="h2">Ranking de vendedores</h2>
+          <p class="apoio">Por faturamento da semana</p>
+        </div>
+        <ol class="ranking" id="ranking"></ol>
+      </section>
+
+      <section class="painel grande" aria-labelledby="t-dias">
+        <div class="painel-cab">
+          <h2 id="t-dias" class="h2">Detalhamento por dia</h2>
+        </div>
+        <div class="tabela-wrap">
+          <table class="tabela">
+            <caption class="sr-only">Faturamento, agendamentos e confirmações por dia da semana</caption>
+            <thead>
+              <tr>
+                <th scope="col">Dia</th>
+                <th scope="col" class="num">Faturamento</th>
+                <th scope="col" class="num">Agendamentos</th>
+                <th scope="col" class="num">Confirmados</th>
+                <th scope="col" class="num">Taxa</th>
+                <th scope="col" class="num">Ticket</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-dias"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+
+    <footer class="rodape">
+      <p>Painel de demonstração da <strong>Solution Innova Digital</strong>. Os números são fictícios e não vêm de nenhum cliente real.</p>
+    </footer>
+  </main>
+
+  <div class="avisos" id="avisos" role="status" aria-live="polite"></div>
+
+  <script src="assets/app.js" defer></script>
+</body>
+</html>
