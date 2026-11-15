@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Loja demo com Pix · Solution Innova Digital</title>
+  <meta name="description" content="Demonstração de catálogo e loja com carrinho e pagamento via Pix, feita pela Solution Innova Digital. Pagamento simulado.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#2B0A57">
+  <link rel="stylesheet" href="assets/loja.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+<a class="pular" href="#principal">Pular para o catálogo</a>
+
+<header class="topo">
+  <div class="wrap topo-in">
+    <a class="marca" href="/" aria-label="Solution Innova Digital · voltar ao site">
+      <img src="assets/logo-branco.svg" alt="Solution Innova Digital" width="120" height="100">
+    </a>
+    <button class="btn-carrinho" type="button" id="abrir-carrinho" aria-controls="carrinho" aria-expanded="false">
+      <span>Carrinho</span>
+      <span class="contador" id="contador" aria-live="polite">0</span>
+    </button>
+  </div>
+</header>
+
+<main id="principal">
+
+  <!-- ===== CATÁLOGO ===== -->
+  <section id="view-catalogo" class="view" aria-labelledby="titulo-catalogo">
+    <div class="hero">
+      <div class="wrap">
+        <p class="selo">Demonstração · pagamento simulado</p>
+        <h1 id="titulo-catalogo" tabindex="-1">Compre direto da vitrine. <span>Pague com Pix.</span></h1>
+        <p class="lead">Um exemplo de loja para vender pelo Instagram: catálogo, carrinho e finalização com Pix em poucos toques.</p>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <div class="barra-filtro">
+        <div class="chips" id="chips" role="group" aria-label="Filtrar por categoria"></div>
+        <label class="busca">
+          <span class="sr">Buscar produto</span>
+          <input type="search" id="busca" placeholder="Buscar produto" autocomplete="off">
+        </label>
+      </div>
+
+      <p class="contagem" id="contagem" aria-live="polite"></p>
+      <ul class="grade" id="grade"></ul>
+      <p class="vazio" id="vazio" hidden>Nenhum produto encontrado para essa busca.</p>
+    </div>
+  </section>
+
+  <!-- ===== CHECKOUT ===== -->
+  <section id="view-checkout" class="view" hidden aria-labelledby="titulo-checkout">
+    <div class="wrap estreito">
+      <p class="passos" aria-label="Etapa 2 de 4">Etapa 2 de 4 · Seus dados</p>
+      <h1 id="titulo-checkout" tabindex="-1">Finalizar compra</h1>
+
+      <div class="duas-colunas">
+        <form id="form-checkout" class="painel form" novalidate>
+          <div class="campo">
+            <label for="nome">Nome completo</label>
+            <input id="nome" name="nome" type="text" autocomplete="name" required minlength="3">
+            <p class="erro" id="erro-nome" hidden>Informe seu nome completo.</p>
+          </div>
+          <div class="campo">
+            <label for="email">E-mail</label>
+            <input id="email" name="email" type="email" autocomplete="email" required>
+            <p class="erro" id="erro-email" hidden>Informe um e-mail válido.</p>
+          </div>
+          <div class="campo">
+            <label for="whatsapp">WhatsApp com DDD</label>
+            <input id="whatsapp" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" placeholder="(11) 90000-0000" required>
+            <p class="erro" id="erro-whatsapp" hidden>Informe um número com DDD.</p>
+          </div>
+
+          <div class="campo cupom">
+            <label for="cupom-input">Cupom de desconto</label>
+            <div class="cupom-linha">
+              <input id="cupom-input" type="text" autocomplete="off" placeholder="Ex.: DEMO10">
+              <button class="btn-sec" type="button" id="aplicar-cupom">Aplicar</button>
+            </div>
+            <p class="msg" id="cupom-msg" aria-live="polite"></p>
+          </div>
+
+          <button class="btn-primario btn-largo" type="submit">Ir para o Pix</button>
+          <button class="btn-link" type="button" data-ir="catalogo">Voltar à loja</button>
+        </form>
+
+        <aside class="painel resumo" aria-labelledby="resumo-titulo">
+          <h2 id="resumo-titulo">Resumo</h2>
+          <ul class="resumo-lista" id="resumo-lista"></ul>
+          <dl class="totais">
+            <div><dt>Subtotal</dt><dd id="resumo-subtotal">R$ 0,00</dd></div>
+            <div id="linha-desconto" hidden><dt>Cupom</dt><dd id="resumo-desconto">-R$ 0,00</dd></div>
+            <div class="total"><dt>Total</dt><dd id="resumo-total">R$ 0,00</dd></div>
+          </dl>
+          <p class="nota">Frete e entrega não entram nesta demonstração.</p>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PIX ===== -->
+  <section id="view-pix" class="view" hidden aria-labelledby="titulo-pix">
+    <div class="wrap estreito">
+      <p class="passos">Etapa 3 de 4 · Pagamento</p>
+      <h1 id="titulo-pix" tabindex="-1">Pague com Pix</h1>
+
+      <div class="painel pix">
+        <p class="pix-valor">Valor a pagar <strong id="pix-valor">R$ 0,00</strong></p>
+
+        <div class="qr-box">
+          <svg id="qr" class="qr" viewBox="0 0 25 25" role="img" aria-label="QR Code de demonstração, não é um pagamento real"></svg>
+        </div>
+        <p class="aviso-demo">QR Code de demonstração. Nenhum valor é cobrado.</p>
+
+        <p class="expira">Expira em <strong id="timer">10:00</strong></p>
+
+        <label class="sr" for="pix-codigo">Código Pix copia e cola</label>
+        <div class="copia">
+          <input id="pix-codigo" type="text" readonly value="">
+          <button class="btn-sec" type="button" id="copiar-pix">Copiar código</button>
+        </div>
+        <p class="msg" id="copia-msg" aria-live="polite"></p>
+
+        <button class="btn-primario btn-largo" type="button" id="simular-pago">Simular pagamento aprovado</button>
+        <button class="btn-link" type="button" data-ir="checkout">Voltar aos dados</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SUCESSO ===== -->
+  <section id="view-sucesso" class="view" hidden aria-labelledby="titulo-sucesso">
+    <div class="wrap estreito centro">
+      <div class="check" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+      </div>
+      <h1 id="titulo-sucesso" tabindex="-1">Pagamento aprovado</h1>
+      <p class="lead">Pedido <strong id="pedido-num">#0000</strong> confirmado. Em uma loja de verdade, o cliente receberia a confirmação por WhatsApp e e-mail.</p>
+      <div class="painel">
+        <p class="nota">Esta é uma demonstração: nenhum pagamento foi feito e nenhum dado foi enviado.</p>
+      </div>
+      <button class="btn-primario" type="button" data-ir="catalogo">Voltar à loja</button>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== CARRINHO (gaveta lateral) ===== -->
+<div class="overlay" id="overlay" hidden></div>
+<aside class="carrinho" id="carrinho" role="dialog" aria-modal="true" aria-labelledby="titulo-carrinho" aria-hidden="true" tabindex="-1">
+  <div class="carrinho-topo">
+    <h2 id="titulo-carrinho">Seu carrinho</h2>
+    <button class="btn-fechar" type="button" id="fechar-carrinho" aria-label="Fechar carrinho">×</button>
+  </div>
+  <ul class="itens" id="itens"></ul>
+  <p class="carrinho-vazio" id="carrinho-vazio">Seu carrinho está vazio.</p>
+  <div class="carrinho-rodape">
+    <div class="linha-total"><span>Subtotal</span><strong id="subtotal">R$ 0,00</strong></div>
+    <button class="btn-primario btn-largo" type="button" id="ir-checkout">Finalizar compra</button>
+  </div>
+</aside>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<footer class="rodape">
+  <div class="wrap">
+    <p>Demonstração criada pela <strong>Solution Innova Digital</strong>. Dados e produtos são fictícios.</p>
+  </div>
+</footer>
+
+<script src="assets/loja.js" defer></script>
+</body>
+</html>
