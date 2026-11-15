@@ -405,3 +405,84 @@ a { color: var(--roxo); }
 .pedidos li strong { font-variant-numeric: tabular-nums; }
 .bloco-pedidos { width: 100%; text-align: left; }
 @media (max-width: 767px) { .ordem, .ordem select { width: 100%; } }
+
+/* ----- cabeçalho: tema e carrinho ----- */
+.topo-acoes { display: flex; align-items: center; gap: 8px; }
+.btn-tema {
+  min-height: 44px; padding: 0 14px; border-radius: 999px; cursor: pointer;
+  background: transparent; color: var(--branco); border: 1.5px solid rgba(255,255,255,.35);
+  font: 700 12px/1 var(--texto); text-transform: uppercase; letter-spacing: .05em;
+  transition: background .2s var(--ease), border-color .2s var(--ease);
+}
+.btn-tema:hover { border-color: var(--menta); }
+.btn-tema[aria-pressed="true"] { background: var(--branco); color: var(--roxo-fundo); border-color: var(--branco); }
+@media (max-width: 380px) { .btn-tema { padding: 0 10px; } }
+
+/* ----- tema Light Noir (DESIGN.md + LIGHT-NOIR.md, valores aproximados em hex) ----- */
+:root[data-theme="light-noir"] {
+  --papel: #F4F3F6;
+  --nevoa: #E6E3EE;
+  --branco: #FBFBFC;
+  --tinta: #0B0910;
+  --tinta-2: #4A4456;
+  --filete: #CBC5D6;
+  --roxo: #4A0F8F;
+  --roxo-fundo: #1A0536;
+  --menta: #5FD6AE;
+  --sombra: 0 16px 44px rgba(10, 5, 20, .32);
+  color-scheme: light;
+}
+:root[data-theme="light-noir"] body { background-image: radial-gradient(circle at 85% -10%, rgba(74,15,143,.08), transparent 55%); }
+:root[data-theme="light-noir"] .card { box-shadow: 0 1px 0 rgba(10,5,20,.04); }
+:root[data-theme="light-noir"] .card:hover { box-shadow: var(--sombra); }
+:root[data-theme="light-noir"] .btn-primario:hover { background: #5FD6AE; }
+
+/* ----- botões-texto pequenos ----- */
+.btn-link-sm {
+  background: none; border: 0; color: var(--roxo); font: 700 13px/1 var(--texto);
+  text-transform: uppercase; letter-spacing: .04em; cursor: pointer; padding: 12px 0; min-height: 44px;
+}
+.btn-link-sm:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ----- card: área clicável ----- */
+.arte-btn { border: 0; padding: 0; width: 100%; cursor: pointer; font: inherit; color: inherit; position: relative; }
+.arte-btn:focus-visible { outline: 3px solid var(--menta); outline-offset: -3px; }
+.arte-btn:hover svg { transform: scale(1.06); }
+.arte-btn svg { transition: transform .4s var(--ease); }
+
+/* ----- página do produto ----- */
+.pdp { display: grid; gap: 28px; margin-top: 16px; }
+.pdp-arte {
+  background: var(--nevoa); border-radius: 20px; display: grid; place-items: center;
+  aspect-ratio: 1 / 1; overflow: hidden;
+}
+.pdp-arte-in { width: 58%; transition: transform .5s var(--ease); }
+.pdp-arte-in svg { width: 100%; height: auto; display: block; }
+.pdp-info { display: flex; flex-direction: column; gap: 18px; }
+.pdp-info h1 { font-size: clamp(40px, 6vw, 64px); }
+.pdp-info .lead { margin-top: 0; }
+.pdp-preco { font-family: var(--display); font-weight: 900; font-size: 44px; line-height: 1; color: var(--roxo-fundo); font-variant-numeric: tabular-nums; }
+.opcoes { display: flex; flex-direction: column; gap: 10px; }
+.rotulo { font: 700 13px/1.3 var(--texto); text-transform: uppercase; letter-spacing: .04em; margin: 0; }
+.opcoes-lista { display: flex; flex-wrap: wrap; gap: 8px; }
+.opcao {
+  min-width: 48px; min-height: 48px; padding: 0 14px; border-radius: 12px; cursor: pointer;
+  border: 1.5px solid var(--filete); background: var(--branco); color: var(--tinta);
+  font: 700 15px/1 var(--texto); transition: all .2s var(--ease);
+}
+.opcao:hover { border-color: var(--roxo); }
+.opcao[aria-pressed="true"] { background: var(--roxo-fundo); border-color: var(--roxo-fundo); color: var(--branco); }
+.opcao.cor { width: 48px; padding: 0; display: grid; place-items: center; }
+.swatch { width: 26px; height: 26px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,.18); }
+.opcao.cor[aria-pressed="true"] { outline: 2px solid var(--roxo-fundo); outline-offset: 3px; background: var(--branco); }
+.opcao.cor[aria-pressed="true"] .swatch { box-shadow: inset 0 0 0 1px rgba(0,0,0,.18); }
+.pdp-qtd { align-self: flex-start; }
+.variante { font-size: 13px; color: var(--roxo); font-weight: 600; margin: 0; }
+
+@media (min-width: 768px) {
+  .pdp { grid-template-columns: 1fr 1fr; align-items: start; gap: 48px; }
+  .pdp-arte { position: sticky; top: 96px; }
+}
+
+/* ----- entrada do produto com movimento ----- */
+#view-produto:not([hidden]) .pdp-arte-in { animation: subir .7s var(--ease) both; }

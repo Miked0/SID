@@ -1,22 +1,62 @@
-/* Loja demo com Pix · Solution Innova Digital
+/* Loja demo com Pix · Solution Innova Digital (Ateliê Vó Nena, fictício)
    Tudo local: sem backend, sem chave Pix real, sem dados de clientes.
    O pagamento é simulado pelo botão "Simular pagamento aprovado". */
 (function () {
   'use strict';
 
+  var TAM_ROUPA = ['PP', 'P', 'M', 'G', 'GG'];
+  var TAM_CALCADO = ['38', '39', '40', '41', '42', '43'];
+  var CORES_TRACO = [
+    { n: 'Roxo Órbita', c: '#6516BD' },
+    { n: 'Noite', c: '#2B0A57' },
+    { n: 'Menta', c: '#68E0BC' }
+  ];
+
   var PRODUTOS = [
-    { id: 'p1', nome: 'Camiseta Algodão', cat: 'vestuario', preco: 59.9, desc: 'Malha penteada, modelagem reta.', cor: '#6516BD' },
-    { id: 'p2', nome: 'Moletom Noite', cat: 'vestuario', preco: 149.9, desc: 'Felpado por dentro, capuz forrado.', cor: '#2B0A57' },
-    { id: 'p3', nome: 'Meia Cano Alto', cat: 'vestuario', preco: 49.9, desc: 'Kit com 3 pares, algodão.', cor: '#6516BD' },
-    { id: 'p4', nome: 'Tênis Corrida Leve', cat: 'calcados', preco: 329.9, desc: 'Entressola macia, solado antiderrapante.', cor: '#68E0BC' },
-    { id: 'p5', nome: 'Chinelo Sol', cat: 'calcados', preco: 79.9, desc: 'Tiras em couro sintético.', cor: '#B9A3E3' },
-    { id: 'p6', nome: 'Boné Órbita', cat: 'acessorios', preco: 69.9, desc: 'Aba curva, ajuste traseiro.', cor: '#6516BD' },
-    { id: 'p7', nome: 'Mochila Urbana 20L', cat: 'acessorios', preco: 199.0, desc: 'Compartimento para notebook.', cor: '#2B0A57', esgotado: true },
-    { id: 'p8', nome: 'Garrafa Térmica 500 ml', cat: 'casa', preco: 89.9, desc: 'Aço inox, mantém a bebida por horas.', cor: '#68E0BC' },
-    { id: 'p9', nome: 'Caneca Foguete', cat: 'casa', preco: 39.9, desc: 'Cerâmica 350 ml, pode ir ao micro-ondas.', cor: '#6516BD' },
-    { id: 'p10', nome: 'Cápsulas de Café', cat: 'casa', preco: 27.5, desc: 'Caixa com 10 cápsulas, intensidade média.', cor: '#B9A3E3' },
-    { id: 'p11', nome: 'Caderno Pontilhado A5', cat: 'papelaria', preco: 34.9, desc: '96 folhas, capa dura, marcador.', cor: '#68E0BC' },
-    { id: 'p12', nome: 'Kit Post-it Menta', cat: 'papelaria', preco: 24.9, desc: 'Três blocos em tons de menta e lilás.', cor: '#B9A3E3' }
+    { id: 'p1', nome: 'Camiseta Algodão', cat: 'vestuario', preco: 59.9, cor: '#6516BD', esgotado: false,
+      desc: 'Malha penteada, modelagem reta.',
+      detalhe: 'Algodão penteado 30.1, gola reforçada e costura dupla. Lavar do avesso em água fria.',
+      tamanhos: TAM_ROUPA, cores: CORES_TRACO },
+    { id: 'p2', nome: 'Moletom Noite', cat: 'vestuario', preco: 149.9, cor: '#2B0A57', esgotado: false,
+      desc: 'Felpado por dentro, capuz forrado.',
+      detalhe: 'Moletom 400 g/m², bolso canguru e punhos em ribana. Ideal para dias frios.',
+      tamanhos: TAM_ROUPA, cores: CORES_TRACO },
+    { id: 'p3', nome: 'Meia Cano Alto', cat: 'vestuario', preco: 49.9, cor: '#6516BD', esgotado: false,
+      desc: 'Kit com 3 pares, algodão.',
+      detalhe: 'Kit com três pares de algodão com elastano. Tamanho único, 37 a 43.' },
+    { id: 'p4', nome: 'Tênis Corrida Leve', cat: 'calcados', preco: 329.9, cor: '#68E0BC', esgotado: false,
+      desc: 'Entressola macia, solado antiderrapante.',
+      detalhe: 'Entressola de espuma leve, cabedal respirável e solado de borracha com tração.',
+      tamanhos: TAM_CALCADO, cores: [{ n: 'Menta', c: '#68E0BC' }, { n: 'Noite', c: '#2B0A57' }] },
+    { id: 'p5', nome: 'Chinelo Sol', cat: 'calcados', preco: 79.9, cor: '#B9A3E3', esgotado: false,
+      desc: 'Tiras em couro sintético.',
+      detalhe: 'Tiras em couro sintético, palmilha macia e solado antiderrapante.',
+      tamanhos: ['37', '38', '39', '40', '41'], cores: [{ n: 'Lilás', c: '#B9A3E3' }, { n: 'Noite', c: '#2B0A57' }] },
+    { id: 'p6', nome: 'Boné Órbita', cat: 'acessorios', preco: 69.9, cor: '#6516BD', esgotado: false,
+      desc: 'Aba curva, ajuste traseiro.',
+      detalhe: 'Sarja de algodão, aba curva e ajuste traseiro em fivela.',
+      cores: CORES_TRACO },
+    { id: 'p7', nome: 'Mochila Urbana 20L', cat: 'acessorios', preco: 199.0, cor: '#2B0A57', esgotado: true,
+      desc: 'Compartimento para notebook.',
+      detalhe: 'Compartimento acolchoado para notebook de até 15 polegadas e bolso frontal.',
+      cores: [{ n: 'Noite', c: '#2B0A57' }, { n: 'Menta', c: '#68E0BC' }] },
+    { id: 'p8', nome: 'Garrafa Térmica 500 ml', cat: 'casa', preco: 89.9, cor: '#68E0BC', esgotado: false,
+      desc: 'Aço inox, mantém a bebida por horas.',
+      detalhe: 'Parede dupla de aço inox, tampa à prova de vazamento. Mantém gelada por 12 horas.',
+      cores: [{ n: 'Menta', c: '#68E0BC' }, { n: 'Noite', c: '#2B0A57' }, { n: 'Lilás', c: '#B9A3E3' }] },
+    { id: 'p9', nome: 'Caneca Foguete', cat: 'casa', preco: 39.9, cor: '#6516BD', esgotado: false,
+      desc: 'Cerâmica 350 ml, pode ir ao micro-ondas.',
+      detalhe: 'Cerâmica esmaltada de 350 ml. Pode ir ao micro-ondas e à lava-louças.',
+      cores: CORES_TRACO },
+    { id: 'p10', nome: 'Cápsulas de Café', cat: 'casa', preco: 27.5, cor: '#B9A3E3', esgotado: false,
+      desc: 'Caixa com 10 cápsulas, intensidade média.',
+      detalhe: 'Caixa com 10 cápsulas compatíveis com máquinas padrão. Intensidade média.' },
+    { id: 'p11', nome: 'Caderno Pontilhado A5', cat: 'papelaria', preco: 34.9, cor: '#68E0BC', esgotado: false,
+      desc: '96 folhas, capa dura, marcador.',
+      detalhe: '96 folhas pontilhadas, capa dura, marcador de página e elástico.' },
+    { id: 'p12', nome: 'Kit Post-it Menta', cat: 'papelaria', preco: 24.9, cor: '#B9A3E3', esgotado: false,
+      desc: 'Três blocos em tons de menta e lilás.',
+      detalhe: 'Três blocos adesivos de 76 × 76 mm em menta, lilás e branco.' }
   ];
 
   var CATEGORIAS = [
@@ -28,63 +68,132 @@
     { id: 'papelaria', nome: 'Papelaria' }
   ];
 
+  /* Frete fictício por primeiro dígito do CEP (aproximação, só para demonstração). */
+  var FRETE = {
+    '0': { regiao: 'Região de São Paulo (capital)', valor: 19.9, prazo: 3 },
+    '1': { regiao: 'Interior de São Paulo', valor: 24.9, prazo: 4 },
+    '2': { regiao: 'Rio de Janeiro e Espírito Santo', valor: 32.9, prazo: 6 },
+    '3': { regiao: 'Minas Gerais', valor: 29.9, prazo: 5 },
+    '4': { regiao: 'Bahia e Sergipe', valor: 49.9, prazo: 9 },
+    '5': { regiao: 'Pernambuco, Alagoas, Paraíba e Rio Grande do Norte', valor: 49.9, prazo: 9 },
+    '6': { regiao: 'Ceará, Piauí, Maranhão, Pará e Norte', valor: 49.9, prazo: 10 },
+    '7': { regiao: 'Centro-Oeste e Tocantins', valor: 39.9, prazo: 7 },
+    '8': { regiao: 'Paraná e Santa Catarina', valor: 36.9, prazo: 6 },
+    '9': { regiao: 'Rio Grande do Sul', valor: 44.9, prazo: 8 }
+  };
+  var FRETE_GRATIS_ACIMA = 299;
+
   var CUPONS = { DEMO10: 0.10 };
   var CHAVE = 'sid-loja-demo-carrinho';
   var CHAVE_PEDIDOS = 'sid-loja-demo-pedidos';
+  var CHAVE_TEMA = 'sid-loja-demo-tema';
   var PIX_SEGUNDOS = 600;
 
   var BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
   var $ = function (id) { return document.getElementById(id); };
 
   var estado = {
-    carrinho: lerCarrinho(),   // { [id]: quantidade }
+    carrinho: {},        // { chave: quantidade }, chave = id|tamanho|cor
     filtro: 'todos',
     busca: '',
-    cupom: null,               // { codigo, pct }
-    ordem: 'relevancia',       // relevancia | menor | maior
+    ordem: 'relevancia', // relevancia | menor | maior
+    cupom: null,         // { codigo, pct }
+    frete: null,         // { cep, regiao, valor, prazo }
+    pdp: null,           // { id, tam, cor, qtd }
     timer: null,
     pedido: null,
     ultimoFoco: null
   };
-
-  function lerPedidos() {
-    try {
-      var lista = JSON.parse(window.localStorage.getItem(CHAVE_PEDIDOS) || '[]');
-      return Array.isArray(lista) ? lista.slice(0, 5) : [];
-    } catch (e) { return []; }
-  }
-  function salvarPedido(pedido) {
-    try {
-      var lista = [pedido].concat(lerPedidos()).slice(0, 5);
-      window.localStorage.setItem(CHAVE_PEDIDOS, JSON.stringify(lista));
-    } catch (e) { /* ignora */ }
-  }
+  estado.carrinho = lerCarrinho();
 
   /* ---------- armazenamento (tolerante a bloqueio) ---------- */
-  function lerCarrinho() {
+  function lerJSON(chave, padrao) {
     try {
-      var bruto = window.localStorage.getItem(CHAVE);
-      var obj = bruto ? JSON.parse(bruto) : {};
-      var limpo = {};
-      Object.keys(obj).forEach(function (id) {
-        if (achar(id) && obj[id] > 0) limpo[id] = Math.min(obj[id], 20);
-      });
-      return limpo;
-    } catch (e) { return {}; }
+      var bruto = window.localStorage.getItem(chave);
+      return bruto ? JSON.parse(bruto) : padrao;
+    } catch (e) { return padrao; }
   }
-  function salvarCarrinho() {
-    try { window.localStorage.setItem(CHAVE, JSON.stringify(estado.carrinho)); } catch (e) { /* ignora */ }
+  function gravar(chave, valor) {
+    try { window.localStorage.setItem(chave, JSON.stringify(valor)); } catch (e) { /* ignora */ }
   }
 
-  /* ---------- utilidades ---------- */
+  function lerCarrinho() {
+    var obj = lerJSON(CHAVE, {});
+    var limpo = {};
+    Object.keys(obj || {}).forEach(function (chave) {
+      var v = parseChave(chave);
+      if (v && v.p && obj[chave] > 0) limpo[chave] = Math.min(obj[chave], 20);
+    });
+    return limpo;
+  }
+  function salvarCarrinho() { gravar(CHAVE, estado.carrinho); }
+
+  function lerPedidos() {
+    var lista = lerJSON(CHAVE_PEDIDOS, []);
+    return Array.isArray(lista) ? lista.slice(0, 5) : [];
+  }
+  function salvarPedido(pedido) {
+    gravar(CHAVE_PEDIDOS, [pedido].concat(lerPedidos()).slice(0, 5));
+  }
+
+  /* ---------- produtos e variantes ---------- */
   function achar(id) {
     for (var i = 0; i < PRODUTOS.length; i++) if (PRODUTOS[i].id === id) return PRODUTOS[i];
     return null;
   }
+  function chave(id, tam, cor) {
+    return id + '|' + (tam || '') + '|' + (cor || '');
+  }
+  function parseChave(k) {
+    var partes = String(k).split('|');
+    var p = achar(partes[0]);
+    if (!p) return null;
+    var tam = partes[1] || '';
+    var cor = partes[2] || '';
+    if (tam && (!p.tamanhos || p.tamanhos.indexOf(tam) === -1)) return null;
+    if (cor && (!p.cores || !p.cores.some(function (c) { return c.n === cor; }))) return null;
+    return { p: p, tam: tam, cor: cor };
+  }
+  function hexDaCor(p, nome) {
+    if (!nome || !p.cores) return p.cor;
+    for (var i = 0; i < p.cores.length; i++) if (p.cores[i].n === nome) return p.cores[i].c;
+    return p.cor;
+  }
+  function temOpcoes(p) {
+    return !!(p.tamanhos || p.cores);
+  }
+  function descVariante(v) {
+    var partes = [];
+    if (v.tam) partes.push('Tam. ' + v.tam);
+    if (v.cor) partes.push(v.cor);
+    return partes.join(' · ');
+  }
+
+  /* Arte do produto: forma geométrica da marca, sem imagens externas. */
+  function arte(p, hex) {
+    var c = hex || p.cor;
+    var forma = {
+      vestuario: '<path d="M30 20 L44 12 Q50 18 56 12 L70 20 L80 34 L72 40 L70 88 L30 88 L28 40 L20 34 Z" fill="' + c + '"/>',
+      calcados: '<path d="M18 62 Q18 40 34 40 L48 48 L76 52 Q84 54 84 64 L84 72 L18 72 Z" fill="' + c + '"/>',
+      acessorios: '<circle cx="50" cy="56" r="26" fill="' + c + '"/><rect x="36" y="22" width="28" height="12" rx="6" fill="' + c + '"/>',
+      casa: '<rect x="28" y="32" width="36" height="50" rx="8" fill="' + c + '"/><path d="M64 44 Q80 44 80 58 Q80 72 64 72" fill="none" stroke="' + c + '" stroke-width="6"/>',
+      papelaria: '<rect x="26" y="22" width="48" height="60" rx="4" fill="' + c + '"/><path d="M36 40h28M36 52h28M36 64h20" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity=".8"/>'
+    }[p.cat];
+    return '<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">' + forma + '</svg>';
+  }
+
+  function escapar(txt) {
+    return String(txt).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  /* ---------- cálculos ---------- */
   function itensCarrinho() {
-    return Object.keys(estado.carrinho).map(function (id) {
-      var p = achar(id);
-      return { p: p, qtd: estado.carrinho[id], linha: p.preco * estado.carrinho[id] };
+    return Object.keys(estado.carrinho).map(function (k) {
+      var v = parseChave(k);
+      var q = estado.carrinho[k];
+      return { chave: k, p: v.p, tam: v.tam, cor: v.cor, qtd: q, linha: v.p.preco * q };
     });
   }
   function subtotal() {
@@ -93,28 +202,15 @@
   function descontoValor() {
     return estado.cupom ? subtotal() * estado.cupom.pct : 0;
   }
+  function freteValor() {
+    if (!estado.frete) return 0;
+    return subtotal() >= FRETE_GRATIS_ACIMA ? 0 : estado.frete.valor;
+  }
   function total() {
-    return subtotal() - descontoValor();
+    return subtotal() - descontoValor() + freteValor();
   }
   function quantidadeTotal() {
-    return Object.keys(estado.carrinho).reduce(function (s, id) { return s + estado.carrinho[id]; }, 0);
-  }
-  function escapar(txt) {
-    return String(txt).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
-  }
-
-  /* Arte do produto: forma geométrica da marca, sem imagens externas. */
-  function arte(p) {
-    var forma = {
-      vestuario: '<path d="M30 20 L44 12 Q50 18 56 12 L70 20 L80 34 L72 40 L70 88 L30 88 L28 40 L20 34 Z" fill="' + p.cor + '"/>',
-      calcados: '<path d="M18 62 Q18 40 34 40 L48 48 L76 52 Q84 54 84 64 L84 72 L18 72 Z" fill="' + p.cor + '"/>',
-      acessorios: '<circle cx="50" cy="56" r="26" fill="' + p.cor + '"/><rect x="36" y="22" width="28" height="12" rx="6" fill="' + p.cor + '"/>',
-      casa: '<rect x="28" y="32" width="36" height="50" rx="8" fill="' + p.cor + '"/><path d="M64 44 Q80 44 80 58 Q80 72 64 72" fill="none" stroke="' + p.cor + '" stroke-width="6"/>',
-      papelaria: '<rect x="26" y="22" width="48" height="60" rx="4" fill="' + p.cor + '"/><path d="M36 40h28M36 52h28M36 64h20" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity=".8"/>'
-    }[p.cat];
-    return '<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">' + forma + '</svg>';
+    return Object.keys(estado.carrinho).reduce(function (s, k) { return s + estado.carrinho[k]; }, 0);
   }
 
   /* ---------- catálogo ---------- */
@@ -138,15 +234,19 @@
     $('grade').innerHTML = lista.map(function (p, i) {
       var tag = p.esgotado ? '<span class="tag esgotado">Esgotado</span>' : '';
       var nomeCat = (CATEGORIAS.filter(function (c) { return c.id === p.cat; })[0] || {}).nome || '';
+      var acao;
+      if (p.esgotado) acao = '<button class="btn-add" type="button" disabled>Indisponível</button>';
+      else if (temOpcoes(p)) acao = '<button class="btn-add" type="button" data-abrir="' + p.id + '">Escolher opções</button>';
+      else acao = '<button class="btn-add" type="button" data-add="' + p.id + '">Adicionar</button>';
       return '<li class="card" style="--i:' + Math.min(i, 8) + '">' +
-        '<div class="arte">' + arte(p) + '<span class="tag">' + escapar(nomeCat) + '</span>' + tag + '</div>' +
+        '<button class="arte arte-btn" type="button" data-abrir="' + p.id + '" aria-label="Ver detalhes de ' + escapar(p.nome) + '">' +
+          arte(p) + '<span class="tag">' + escapar(nomeCat) + '</span>' + tag +
+        '</button>' +
         '<div class="info">' +
           '<h3>' + escapar(p.nome) + '</h3>' +
           '<p class="desc">' + escapar(p.desc) + '</p>' +
           '<p class="preco">' + BRL.format(p.preco) + '</p>' +
-          '<button class="btn-add" type="button" data-add="' + p.id + '"' + (p.esgotado ? ' disabled' : '') + '>' +
-            (p.esgotado ? 'Indisponível' : 'Adicionar') +
-          '</button>' +
+          acao +
         '</div>' +
       '</li>';
     }).join('');
@@ -155,24 +255,89 @@
     $('vazio').hidden = lista.length > 0;
   }
 
-  /* ---------- carrinho ---------- */
-  function adicionar(id) {
+  /* ---------- página do produto ---------- */
+  function abrirProduto(id) {
     var p = achar(id);
-    if (!p || p.esgotado) return;
-    estado.carrinho[id] = Math.min((estado.carrinho[id] || 0) + 1, 20);
+    if (!p) return;
+    estado.pdp = {
+      id: id,
+      tam: '',
+      cor: p.cores ? p.cores[0].n : '',
+      qtd: 1
+    };
+    irPara('produto');
+  }
+
+  function renderProduto() {
+    var s = estado.pdp;
+    var p = achar(s.id);
+    if (!p) return;
+    $('pdp-categoria').textContent = (CATEGORIAS.filter(function (c) { return c.id === p.cat; })[0] || {}).nome || '';
+    $('titulo-produto').textContent = p.nome;
+    $('pdp-desc').textContent = p.detalhe;
+    $('pdp-arte').innerHTML = arte(p, hexDaCor(p, s.cor));
+    $('pdp-arte').setAttribute('data-cor', hexDaCor(p, s.cor));
+    $('pdp-preco').textContent = BRL.format(p.preco);
+
+    $('bloco-tamanhos').hidden = !p.tamanhos;
+    if (p.tamanhos) {
+      $('pdp-tamanhos').innerHTML = p.tamanhos.map(function (t) {
+        return '<button type="button" class="opcao" data-tam="' + escapar(t) + '" aria-pressed="' + (s.tam === t) + '">' + escapar(t) + '</button>';
+      }).join('');
+    }
+
+    $('bloco-cores').hidden = !p.cores;
+    if (p.cores) {
+      $('cor-atual').textContent = s.cor;
+      $('pdp-cores').innerHTML = p.cores.map(function (c) {
+        return '<button type="button" class="opcao cor" data-cor="' + escapar(c.n) + '" aria-pressed="' + (s.cor === c.n) +
+          '" aria-label="' + escapar(c.n) + '" title="' + escapar(c.n) + '"><span class="swatch" style="background:' + c.c + '"></span></button>';
+      }).join('');
+    }
+
+    $('pqtd').textContent = s.qtd;
+    $('pdp-msg').textContent = '';
+    $('pdp-msg').className = 'msg';
+  }
+
+  function adicionarDaPagina() {
+    var s = estado.pdp;
+    var p = achar(s.id);
+    if (!p) return;
+    if (p.tamanhos && !s.tam) {
+      $('pdp-msg').textContent = 'Escolha um tamanho para continuar.';
+      $('pdp-msg').className = 'msg nok';
+      $('pdp-tamanhos').querySelector('button').focus();
+      return;
+    }
+    var k = chave(p.id, s.tam, s.cor);
+    estado.carrinho[k] = Math.min((estado.carrinho[k] || 0) + s.qtd, 20);
+    salvarCarrinho();
+    atualizarTudo();
+    toast(p.nome + (s.tam || s.cor ? ' (' + descVariante({ tam: s.tam, cor: s.cor }) + ')' : '') + ' adicionado');
+    $('pdp-msg').textContent = 'Adicionado ao carrinho.';
+    $('pdp-msg').className = 'msg ok';
+  }
+
+  /* ---------- carrinho ---------- */
+  function adicionarRapido(id) {
+    var p = achar(id);
+    if (!p || p.esgotado || temOpcoes(p)) return;
+    var k = chave(p.id, '', '');
+    estado.carrinho[k] = Math.min((estado.carrinho[k] || 0) + 1, 20);
     salvarCarrinho();
     atualizarTudo();
     toast(p.nome + ' adicionado ao carrinho');
   }
-  function alterar(id, delta) {
-    var nova = (estado.carrinho[id] || 0) + delta;
-    if (nova <= 0) delete estado.carrinho[id];
-    else estado.carrinho[id] = Math.min(nova, 20);
+  function alterar(k, delta) {
+    var nova = (estado.carrinho[k] || 0) + delta;
+    if (nova <= 0) delete estado.carrinho[k];
+    else estado.carrinho[k] = Math.min(nova, 20);
     salvarCarrinho();
     atualizarTudo();
   }
-  function remover(id) {
-    delete estado.carrinho[id];
+  function remover(k) {
+    delete estado.carrinho[k];
     salvarCarrinho();
     atualizarTudo();
   }
@@ -180,20 +345,22 @@
   function renderCarrinho() {
     var itens = itensCarrinho();
     $('itens').innerHTML = itens.map(function (i) {
+      var var_ = descVariante(i);
       return '<li class="item">' +
-        '<div class="mini">' + arte(i.p) + '</div>' +
+        '<div class="mini">' + arte(i.p, hexDaCor(i.p, i.cor)) + '</div>' +
         '<div>' +
           '<h4>' + escapar(i.p.nome) + '</h4>' +
+          (var_ ? '<p class="variante">' + escapar(var_) + '</p>' : '') +
           '<p class="unit">' + BRL.format(i.p.preco) + ' cada</p>' +
           '<div class="qtd">' +
-            '<button type="button" data-menos="' + i.p.id + '" aria-label="Diminuir quantidade de ' + escapar(i.p.nome) + '">−</button>' +
+            '<button type="button" data-menos="' + escapar(i.chave) + '" aria-label="Diminuir quantidade de ' + escapar(i.p.nome) + '">−</button>' +
             '<span aria-live="polite">' + i.qtd + '</span>' +
-            '<button type="button" data-mais="' + i.p.id + '" aria-label="Aumentar quantidade de ' + escapar(i.p.nome) + '">+</button>' +
+            '<button type="button" data-mais="' + escapar(i.chave) + '" aria-label="Aumentar quantidade de ' + escapar(i.p.nome) + '">+</button>' +
           '</div>' +
         '</div>' +
         '<div class="lado">' +
           '<span class="linha-preco">' + BRL.format(i.linha) + '</span>' +
-          '<button class="remover" type="button" data-remover="' + i.p.id + '">Remover</button>' +
+          '<button class="remover" type="button" data-remover="' + escapar(i.chave) + '">Remover</button>' +
         '</div>' +
       '</li>';
     }).join('');
@@ -245,12 +412,13 @@
   }
 
   /* ---------- navegação entre etapas ---------- */
-  var VIEWS = { catalogo: 'view-catalogo', checkout: 'view-checkout', pix: 'view-pix', sucesso: 'view-sucesso' };
-  var TITULOS = { catalogo: 'titulo-catalogo', checkout: 'titulo-checkout', pix: 'titulo-pix', sucesso: 'titulo-sucesso' };
+  var VIEWS = { catalogo: 'view-catalogo', produto: 'view-produto', checkout: 'view-checkout', pix: 'view-pix', sucesso: 'view-sucesso' };
+  var TITULOS = { catalogo: 'titulo-catalogo', produto: 'titulo-produto', checkout: 'titulo-checkout', pix: 'titulo-pix', sucesso: 'titulo-sucesso' };
 
   function irPara(etapa) {
     if (etapa === 'checkout' && quantidadeTotal() === 0) { toast('Adicione produtos antes de finalizar'); return; }
     fecharCarrinho(false);
+    if (etapa === 'produto') renderProduto();
     Object.keys(VIEWS).forEach(function (k) { $(VIEWS[k]).hidden = k !== etapa; });
     if (etapa === 'checkout') renderResumo();
     if (etapa !== 'pix') pararTimer();
@@ -262,14 +430,43 @@
   function renderResumo() {
     var itens = itensCarrinho();
     $('resumo-lista').innerHTML = itens.map(function (i) {
-      return '<li><span>' + escapar(i.p.nome) + ' <small>' + i.qtd + ' × ' + BRL.format(i.p.preco) + '</small></span>' +
+      var var_ = descVariante(i);
+      return '<li><span>' + escapar(i.p.nome) + (var_ ? ' <small>' + escapar(var_) + '</small>' : '') +
+        ' <small>' + i.qtd + ' × ' + BRL.format(i.p.preco) + '</small></span>' +
         '<strong>' + BRL.format(i.linha) + '</strong></li>';
     }).join('');
     $('resumo-subtotal').textContent = BRL.format(subtotal());
-    var temDesc = !!estado.cupom;
-    $('linha-desconto').hidden = !temDesc;
+    $('linha-desconto').hidden = !estado.cupom;
     $('resumo-desconto').textContent = '-' + BRL.format(descontoValor());
+    if (!estado.frete) $('resumo-frete').textContent = 'Informe o CEP';
+    else if (freteValor() === 0) $('resumo-frete').textContent = 'Grátis';
+    else $('resumo-frete').textContent = BRL.format(freteValor());
     $('resumo-total').textContent = BRL.format(total());
+  }
+
+  /* ---------- frete por CEP (simulado) ---------- */
+  function calcularFrete() {
+    var cep = $('cep').value.replace(/\D/g, '');
+    var erro = $('erro-cep');
+    var msg = $('frete-msg');
+    if (cep.length !== 8) {
+      erro.hidden = false;
+      $('cep').setAttribute('aria-invalid', 'true');
+      estado.frete = null;
+      msg.textContent = '';
+      renderResumo();
+      return false;
+    }
+    erro.hidden = true;
+    $('cep').setAttribute('aria-invalid', 'false');
+    var f = FRETE[cep.charAt(0)];
+    estado.frete = { cep: cep, regiao: f.regiao, valor: f.valor, prazo: f.prazo };
+    var gratis = subtotal() >= FRETE_GRATIS_ACIMA;
+    msg.textContent = 'Entrega em até ' + f.prazo + ' dias úteis para ' + f.regiao + '. ' +
+      (gratis ? 'Frete grátis nesta compra.' : 'Frete ' + BRL.format(f.valor) + '.');
+    msg.className = 'msg ok';
+    renderResumo();
+    return true;
   }
 
   /* ---------- cupom ---------- */
@@ -294,8 +491,7 @@
 
   /* ---------- formulário ---------- */
   function validarCampo(input, erroId, ok) {
-    var erro = $(erroId);
-    erro.hidden = ok;
+    $(erroId).hidden = ok;
     input.setAttribute('aria-invalid', ok ? 'false' : 'true');
     return ok;
   }
@@ -306,7 +502,13 @@
     var okNome = validarCampo($('nome'), 'erro-nome', nome.length >= 3 && nome.indexOf(' ') !== -1);
     var okEmail = validarCampo($('email'), 'erro-email', /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email));
     var okZap = validarCampo($('whatsapp'), 'erro-whatsapp', zap.length === 10 || zap.length === 11);
-    return okNome && okEmail && okZap;
+    var okFrete = !!estado.frete;
+    if (!okFrete) {
+      $('erro-cep').hidden = false;
+      $('cep').setAttribute('aria-invalid', 'true');
+      $('cep').focus();
+    }
+    return okNome && okEmail && okZap && okFrete;
   }
 
   /* ---------- Pix (simulado) ---------- */
@@ -369,8 +571,33 @@
     $('qr').innerHTML = '<rect width="25" height="25" fill="#FFFFFF"/><path fill="#17141D" d="' + partes.join('') + '"/>';
   }
 
+  /* ---------- pedidos recentes (neste navegador) ---------- */
+  function mostrarPedidos() {
+    var lista = lerPedidos();
+    $('bloco-pedidos').hidden = lista.length === 0;
+    $('pedidos-recentes').innerHTML = lista.map(function (p) {
+      var itens = p.itens === 1 ? '1 item' : p.itens + ' itens';
+      return '<li><span><strong>' + escapar(p.numero) + '</strong> · ' + escapar(p.data) + ' · ' + itens + '</span>' +
+        '<strong>' + BRL.format(p.total) + '</strong></li>';
+    }).join('');
+  }
+
+  /* ---------- tema Light Noir ---------- */
+  function aplicarTema(noir) {
+    if (noir) document.documentElement.setAttribute('data-theme', 'light-noir');
+    else document.documentElement.removeAttribute('data-theme');
+    $('tema').setAttribute('aria-pressed', noir ? 'true' : 'false');
+  }
+  function alternarTema() {
+    var noir = document.documentElement.getAttribute('data-theme') !== 'light-noir';
+    aplicarTema(noir);
+    gravar(CHAVE_TEMA, noir);
+  }
+
   /* ---------- eventos ---------- */
   function ligar() {
+    $('tema').addEventListener('click', alternarTema);
+
     $('chips').addEventListener('click', function (e) {
       var b = e.target.closest('[data-cat]');
       if (!b) return;
@@ -384,9 +611,26 @@
       renderGrade();
     });
 
+    $('ordem').addEventListener('change', function (e) {
+      estado.ordem = e.target.value;
+      renderGrade();
+    });
+
     $('grade').addEventListener('click', function (e) {
+      var ver = e.target.closest('[data-abrir]');
+      if (ver) { abrirProduto(ver.getAttribute('data-abrir')); return; }
       var b = e.target.closest('[data-add]');
-      if (b) adicionar(b.getAttribute('data-add'));
+      if (b) adicionarRapido(b.getAttribute('data-add'));
+    });
+
+    $('view-produto').addEventListener('click', function (e) {
+      var t = e.target.closest('button');
+      if (!t || !estado.pdp) return;
+      if (t.hasAttribute('data-tam')) { estado.pdp.tam = t.getAttribute('data-tam'); renderProduto(); }
+      else if (t.hasAttribute('data-cor')) { estado.pdp.cor = t.getAttribute('data-cor'); renderProduto(); }
+      else if (t.id === 'pqtd-mais') { estado.pdp.qtd = Math.min(estado.pdp.qtd + 1, 20); $('pqtd').textContent = estado.pdp.qtd; }
+      else if (t.id === 'pqtd-menos') { estado.pdp.qtd = Math.max(estado.pdp.qtd - 1, 1); $('pqtd').textContent = estado.pdp.qtd; }
+      else if (t.id === 'pdp-add') adicionarDaPagina();
     });
 
     $('itens').addEventListener('click', function (e) {
@@ -400,11 +644,6 @@
     $('fechar-carrinho').addEventListener('click', function () { fecharCarrinho(); });
     $('overlay').addEventListener('click', function () { fecharCarrinho(); });
     $('ir-checkout').addEventListener('click', function () { irPara('checkout'); });
-
-    $('ordem').addEventListener('change', function (e) {
-      estado.ordem = e.target.value;
-      renderGrade();
-    });
 
     document.addEventListener('keydown', function (e) {
       var aberto = $('carrinho').classList.contains('aberto');
@@ -429,6 +668,15 @@
     $('aplicar-cupom').addEventListener('click', aplicarCupom);
     $('cupom-input').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); aplicarCupom(); }
+    });
+
+    $('calcular-frete').addEventListener('click', calcularFrete);
+    $('cep').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); calcularFrete(); }
+    });
+    $('cep').addEventListener('input', function (e) {
+      var d = e.target.value.replace(/\D/g, '').slice(0, 8);
+      e.target.value = d.length > 5 ? d.slice(0, 5) + '-' + d.slice(5) : d;
     });
 
     $('form-checkout').addEventListener('submit', function (e) {
@@ -461,39 +709,30 @@
     $('simular-pago').addEventListener('click', function () {
       pararTimer();
       var num = estado.pedido || gerarPedido();
-      var pedido = {
+      salvarPedido({
         numero: num,
         data: new Date().toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }),
         itens: quantidadeTotal(),
         total: total()
-      };
-      salvarPedido(pedido);
+      });
       $('pedido-num').textContent = num;
       mostrarPedidos();
       estado.carrinho = {};
       estado.cupom = null;
+      estado.frete = null;
       salvarCarrinho();
       estado.pedido = null;
       atualizarTudo();
       $('cupom-input').value = '';
       $('cupom-msg').textContent = '';
+      $('cep').value = '';
+      $('frete-msg').textContent = '';
       irPara('sucesso');
     });
   }
 
-  /* ---------- pedidos recentes (neste navegador) ---------- */
-  function mostrarPedidos() {
-    var lista = lerPedidos();
-    var bloco = $('bloco-pedidos');
-    bloco.hidden = lista.length === 0;
-    $('pedidos-recentes').innerHTML = lista.map(function (p) {
-      var itens = p.itens === 1 ? '1 item' : p.itens + ' itens';
-      return '<li><span><strong>' + escapar(p.numero) + '</strong> · ' + escapar(p.data) + ' · ' + itens + '</span>' +
-        '<strong>' + BRL.format(p.total) + '</strong></li>';
-    }).join('');
-  }
-
   /* ---------- início ---------- */
+  aplicarTema(lerJSON(CHAVE_TEMA, false) === true);
   mostrarPedidos();
   renderChips();
   renderGrade();

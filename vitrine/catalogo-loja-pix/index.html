@@ -19,10 +19,13 @@
     <a class="marca" href="/" aria-label="Solution Innova Digital · voltar ao site">
       <img src="assets/logo-branco.svg" alt="Solution Innova Digital" width="120" height="100">
     </a>
+    <div class="topo-acoes">
+      <button class="btn-tema" type="button" id="tema" aria-pressed="false">Modo Noir</button>
     <button class="btn-carrinho" type="button" id="abrir-carrinho" aria-controls="carrinho" aria-expanded="false">
       <span>Carrinho</span>
       <span class="contador" id="contador" aria-live="polite">0</span>
     </button>
+    </div>
   </div>
 </header>
 
@@ -63,6 +66,46 @@
     </div>
   </section>
 
+  <!-- ===== PRODUTO ===== -->
+  <section id="view-produto" class="view" hidden aria-labelledby="titulo-produto">
+    <div class="wrap">
+      <button class="btn-link-sm" type="button" data-ir="catalogo">← Voltar à loja</button>
+      <div class="pdp">
+        <div class="pdp-arte" id="pdp-arte-caixa">
+          <div id="pdp-arte" class="pdp-arte-in"></div>
+        </div>
+        <div class="pdp-info">
+          <p class="passos" id="pdp-categoria"></p>
+          <h1 id="titulo-produto" tabindex="-1"></h1>
+          <p class="lead" id="pdp-desc"></p>
+          <p class="pdp-preco" id="pdp-preco"></p>
+
+          <div class="opcoes" id="bloco-tamanhos">
+            <p class="rotulo" id="rotulo-tam">Tamanho</p>
+            <div class="opcoes-lista" id="pdp-tamanhos" role="group" aria-labelledby="rotulo-tam"></div>
+          </div>
+
+          <div class="opcoes" id="bloco-cores">
+            <p class="rotulo" id="rotulo-cor">Cor: <span id="cor-atual"></span></p>
+            <div class="opcoes-lista" id="pdp-cores" role="group" aria-labelledby="rotulo-cor"></div>
+          </div>
+
+          <div class="opcoes">
+            <p class="rotulo" id="rotulo-qtd">Quantidade</p>
+            <div class="qtd pdp-qtd" role="group" aria-labelledby="rotulo-qtd">
+              <button type="button" id="pqtd-menos" aria-label="Diminuir quantidade">−</button>
+              <span id="pqtd" aria-live="polite">1</span>
+              <button type="button" id="pqtd-mais" aria-label="Aumentar quantidade">+</button>
+            </div>
+          </div>
+
+          <p class="msg" id="pdp-msg" aria-live="polite"></p>
+          <button class="btn-primario btn-largo" type="button" id="pdp-add">Adicionar ao carrinho</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== CHECKOUT ===== -->
   <section id="view-checkout" class="view" hidden aria-labelledby="titulo-checkout">
     <div class="wrap estreito">
@@ -87,6 +130,17 @@
             <p class="erro" id="erro-whatsapp" hidden>Informe um número com DDD.</p>
           </div>
 
+          <div class="campo">
+            <label for="cep">CEP de entrega</label>
+            <div class="cupom-linha">
+              <input id="cep" name="cep" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000">
+              <button class="btn-sec" type="button" id="calcular-frete">Calcular</button>
+            </div>
+            <p class="erro" id="erro-cep" hidden>Informe um CEP com 8 dígitos.</p>
+            <p class="msg" id="frete-msg" aria-live="polite"></p>
+            <p class="nota">Frete simulado, com tabela fictícia por região. Acima de R$ 299 o frete é grátis.</p>
+          </div>
+
           <div class="campo cupom">
             <label for="cupom-input">Cupom de desconto</label>
             <div class="cupom-linha">
@@ -106,9 +160,10 @@
           <dl class="totais">
             <div><dt>Subtotal</dt><dd id="resumo-subtotal">R$ 0,00</dd></div>
             <div id="linha-desconto" hidden><dt>Cupom</dt><dd id="resumo-desconto">-R$ 0,00</dd></div>
+            <div><dt>Frete</dt><dd id="resumo-frete">Informe o CEP</dd></div>
             <div class="total"><dt>Total</dt><dd id="resumo-total">R$ 0,00</dd></div>
           </dl>
-          <p class="nota">Frete e entrega não entram nesta demonstração.</p>
+          <p class="nota">Pagamento via Pix. Nenhum valor é cobrado nesta demonstração.</p>
         </aside>
       </div>
     </div>
