@@ -4,7 +4,7 @@ Vitrine de demonstração do catálogo e da loja com carrinho e pagamento via Pi
 
 - `index.html`: catálogo, carrinho, dados do cliente, tela de Pix e confirmação (todas as etapas na mesma página).
 - `assets/loja.css`: estilos (tokens da marca em `:root`, fontes Big Shoulders Display e Manrope hospedadas em `/fonts/`).
-- `assets/loja.js`: catálogo de exemplo, carrinho (localStorage), cupom `DEMO10`, validação e pagamento simulado.
+- `assets/loja.js`: catálogo de exemplo, ordenação, carrinho (localStorage), cupom `DEMO10`, validação, pedidos recentes e pagamento simulado.
 
 ## Limites da demonstração
 

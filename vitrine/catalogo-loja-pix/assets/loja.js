@@ -30,6 +30,7 @@
 
   var CUPONS = { DEMO10: 0.10 };
   var CHAVE = 'sid-loja-demo-carrinho';
+  var CHAVE_PEDIDOS = 'sid-loja-demo-pedidos';
   var PIX_SEGUNDOS = 600;
 
   var BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -40,9 +41,24 @@
     filtro: 'todos',
     busca: '',
     cupom: null,               // { codigo, pct }
+    ordem: 'relevancia',       // relevancia | menor | maior
     timer: null,
-    pedido: null
+    pedido: null,
+    ultimoFoco: null
   };
+
+  function lerPedidos() {
+    try {
+      var lista = JSON.parse(window.localStorage.getItem(CHAVE_PEDIDOS) || '[]');
+      return Array.isArray(lista) ? lista.slice(0, 5) : [];
+    } catch (e) { return []; }
+  }
+  function salvarPedido(pedido) {
+    try {
+      var lista = [pedido].concat(lerPedidos()).slice(0, 5);
+      window.localStorage.setItem(CHAVE_PEDIDOS, JSON.stringify(lista));
+    } catch (e) { /* ignora */ }
+  }
 
   /* ---------- armazenamento (tolerante a bloqueio) ---------- */
   function lerCarrinho() {
@@ -116,11 +132,13 @@
       var okBusca = !termo || p.nome.toLowerCase().indexOf(termo) !== -1 || p.desc.toLowerCase().indexOf(termo) !== -1;
       return okCat && okBusca;
     });
+    if (estado.ordem === 'menor') lista = lista.slice().sort(function (a, b) { return a.preco - b.preco; });
+    if (estado.ordem === 'maior') lista = lista.slice().sort(function (a, b) { return b.preco - a.preco; });
 
-    $('grade').innerHTML = lista.map(function (p) {
+    $('grade').innerHTML = lista.map(function (p, i) {
       var tag = p.esgotado ? '<span class="tag esgotado">Esgotado</span>' : '';
       var nomeCat = (CATEGORIAS.filter(function (c) { return c.id === p.cat; })[0] || {}).nome || '';
-      return '<li class="card">' +
+      return '<li class="card" style="--i:' + Math.min(i, 8) + '">' +
         '<div class="arte">' + arte(p) + '<span class="tag">' + escapar(nomeCat) + '</span>' + tag + '</div>' +
         '<div class="info">' +
           '<h3>' + escapar(p.nome) + '</h3>' +
@@ -186,7 +204,11 @@
 
   function atualizarContador() {
     var q = quantidadeTotal();
-    $('contador').textContent = q;
+    var badge = $('contador');
+    badge.textContent = q;
+    badge.classList.remove('pulsa');
+    void badge.offsetWidth;
+    badge.classList.add('pulsa');
     $('abrir-carrinho').setAttribute('aria-label', 'Carrinho, ' + q + (q === 1 ? ' item' : ' itens'));
   }
 
@@ -379,8 +401,21 @@
     $('overlay').addEventListener('click', function () { fecharCarrinho(); });
     $('ir-checkout').addEventListener('click', function () { irPara('checkout'); });
 
+    $('ordem').addEventListener('change', function (e) {
+      estado.ordem = e.target.value;
+      renderGrade();
+    });
+
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && $('carrinho').classList.contains('aberto')) fecharCarrinho();
+      var aberto = $('carrinho').classList.contains('aberto');
+      if (e.key === 'Escape' && aberto) { fecharCarrinho(); return; }
+      if (e.key !== 'Tab' || !aberto) return;
+      // Mantém o foco dentro da gaveta enquanto ela estiver aberta.
+      var foco = Array.prototype.slice.call($('carrinho').querySelectorAll('button:not([disabled])'));
+      if (!foco.length) return;
+      var primeiro = foco[0], ultimo = foco[foco.length - 1];
+      if (e.shiftKey && document.activeElement === primeiro) { e.preventDefault(); ultimo.focus(); }
+      else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro.focus(); }
     });
 
     document.addEventListener('click', function (e) {
@@ -426,7 +461,15 @@
     $('simular-pago').addEventListener('click', function () {
       pararTimer();
       var num = estado.pedido || gerarPedido();
+      var pedido = {
+        numero: num,
+        data: new Date().toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }),
+        itens: quantidadeTotal(),
+        total: total()
+      };
+      salvarPedido(pedido);
       $('pedido-num').textContent = num;
+      mostrarPedidos();
       estado.carrinho = {};
       estado.cupom = null;
       salvarCarrinho();
@@ -438,7 +481,20 @@
     });
   }
 
+  /* ---------- pedidos recentes (neste navegador) ---------- */
+  function mostrarPedidos() {
+    var lista = lerPedidos();
+    var bloco = $('bloco-pedidos');
+    bloco.hidden = lista.length === 0;
+    $('pedidos-recentes').innerHTML = lista.map(function (p) {
+      var itens = p.itens === 1 ? '1 item' : p.itens + ' itens';
+      return '<li><span><strong>' + escapar(p.numero) + '</strong> · ' + escapar(p.data) + ' · ' + itens + '</span>' +
+        '<strong>' + BRL.format(p.total) + '</strong></li>';
+    }).join('');
+  }
+
   /* ---------- início ---------- */
+  mostrarPedidos();
   renderChips();
   renderGrade();
   atualizarTudo();

@@ -32,19 +32,29 @@
   <section id="view-catalogo" class="view" aria-labelledby="titulo-catalogo">
     <div class="hero">
       <div class="wrap">
-        <p class="selo">Demonstração · pagamento simulado</p>
+        <p class="selo">Ateliê Vó Nena · loja demo</p>
         <h1 id="titulo-catalogo" tabindex="-1">Compre direto da vitrine. <span>Pague com Pix.</span></h1>
-        <p class="lead">Um exemplo de loja para vender pelo Instagram: catálogo, carrinho e finalização com Pix em poucos toques.</p>
+        <p class="lead">Um exemplo de loja para vender pelo Instagram: catálogo, carrinho e finalização com Pix em poucos toques. Pagamento simulado, nada é cobrado.</p>
       </div>
     </div>
 
     <div class="wrap">
       <div class="barra-filtro">
         <div class="chips" id="chips" role="group" aria-label="Filtrar por categoria"></div>
-        <label class="busca">
-          <span class="sr">Buscar produto</span>
-          <input type="search" id="busca" placeholder="Buscar produto" autocomplete="off">
-        </label>
+        <div class="filtro-direita">
+          <label class="busca">
+            <span class="sr">Buscar produto</span>
+            <input type="search" id="busca" placeholder="Buscar produto" autocomplete="off">
+          </label>
+          <label class="ordem">
+            <span class="sr">Ordenar produtos</span>
+            <select id="ordem">
+              <option value="relevancia">Relevância</option>
+              <option value="menor">Menor preço</option>
+              <option value="maior">Maior preço</option>
+            </select>
+          </label>
+        </div>
       </div>
 
       <p class="contagem" id="contagem" aria-live="polite"></p>
@@ -144,6 +154,11 @@
       <div class="painel">
         <p class="nota">Esta é uma demonstração: nenhum pagamento foi feito e nenhum dado foi enviado.</p>
       </div>
+      <div class="painel bloco-pedidos" id="bloco-pedidos" hidden>
+        <h2>Pedidos recentes</h2>
+        <p class="nota">Guardados só neste navegador, para testar o fluxo.</p>
+        <ul class="pedidos" id="pedidos-recentes"></ul>
+      </div>
       <button class="btn-primario" type="button" data-ir="catalogo">Voltar à loja</button>
     </div>
   </section>
@@ -169,7 +184,7 @@
 
 <footer class="rodape">
   <div class="wrap">
-    <p>Demonstração criada pela <strong>Solution Innova Digital</strong>. Dados e produtos são fictícios.</p>
+    <p>Ateliê Vó Nena é um negócio fictício, criado pela <strong>Solution Innova Digital</strong> para demonstração. Produtos, preços e pedidos são fictícios.</p>
   </div>
 </footer>
 

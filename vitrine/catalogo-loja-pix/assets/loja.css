@@ -358,3 +358,50 @@ a { color: var(--roxo); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
+
+/* ----- filtros: busca + ordenação ----- */
+.filtro-direita { display: flex; gap: 10px; }
+.filtro-direita .busca { flex: 1; min-width: 0; }
+.ordem select {
+  min-height: 48px; padding: 0 36px 0 14px; border-radius: 12px; border: 1.5px solid var(--filete);
+  background: var(--branco) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%232B0A57' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 14px center;
+  appearance: none; font: 600 14px var(--texto); color: var(--tinta); cursor: pointer; white-space: nowrap;
+}
+.ordem select:focus { border-color: var(--roxo); outline: 3px solid rgba(104,224,188,.6); outline-offset: 0; }
+@media (max-width: 767px) { .filtro-direita { flex-direction: column; } .filtro-direita .busca { width: 100%; } }
+@media (min-width: 768px) { .busca { width: auto; } .filtro-direita { width: 520px; } }
+
+/* ----- movimento ----- */
+@keyframes subir {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes brilho {
+  from { opacity: 0; transform: translateX(-40%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes saltar {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+.hero h1 { animation: subir .8s var(--ease) both; }
+.hero .lead, .hero .selo { animation: subir .8s var(--ease) .12s both; }
+.hero::after { animation: brilho 1.2s var(--ease) .2s both; }
+.card { animation: subir .6s var(--ease) backwards; animation-delay: calc(var(--i, 0) * 70ms); }
+.contador.pulsa { animation: saltar .45s var(--ease); }
+.item { animation: subir .4s var(--ease) both; }
+.view:not([hidden]) > .wrap > * { animation: subir .5s var(--ease) both; }
+.view:not([hidden]) > .wrap > *:nth-child(2) { animation-delay: .08s; }
+.view:not([hidden]) > .wrap > *:nth-child(3) { animation-delay: .16s; }
+.bloco-pedidos h2 { font-size: 24px; margin-bottom: 8px; }
+
+/* ----- pedidos recentes ----- */
+.pedidos { list-style: none; padding: 0; margin: 12px 0 0; display: flex; flex-direction: column; gap: 8px; }
+.pedidos li {
+  display: flex; justify-content: space-between; gap: 12px; align-items: center;
+  padding: 12px 14px; border-radius: 10px; background: var(--nevoa); font-size: 14px;
+}
+.pedidos li strong { font-variant-numeric: tabular-nums; }
+.bloco-pedidos { width: 100%; text-align: left; }
+@media (max-width: 767px) { .ordem, .ordem select { width: 100%; } }
