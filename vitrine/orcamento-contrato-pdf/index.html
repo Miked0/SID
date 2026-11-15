@@ -63,10 +63,10 @@
               <span>Orçamento</span>
             </div>
             <div class="folha-corpo">
-              <div class="folha-linha"><b></b><i>R$ 1.800,00</i></div>
-              <div class="folha-linha"><b class="curta"></b><i>R$ 900,00</i></div>
-              <div class="folha-linha"><b></b><i>R$ 540,00</i></div>
-              <div class="folha-total"><span>Total</span><strong>R$ 3.078,00</strong></div>
+              <div class="folha-linha"><b></b><i>R$ 720,00</i></div>
+              <div class="folha-linha"><b class="curta"></b><i>R$ 250,00</i></div>
+              <div class="folha-linha"><b></b><i>R$ 180,00</i></div>
+              <div class="folha-total"><span>Total</span><strong>R$ 1.035,00</strong></div>
             </div>
             <div class="folha-assin">
               <span><svg viewBox="0 0 120 30"><path d="M4 22 C 14 4, 22 30, 30 16 S 44 6, 50 20 S 64 26, 72 12 S 92 8, 116 18"/></svg></span>
@@ -179,6 +179,17 @@
             <span class="badge" id="badge-status">Rascunho</span>
           </div>
           <p class="ajuda">Atualiza enquanto você digita. O PDF sai igual, com as fontes da marca.</p>
+          <div class="previa-acoes">
+            <button type="button" id="abrir-assinatura" class="btn-secundario">
+              <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M3 15c2-1 3-6 5-6s1 5 3 5 2-3 3-3 1 2 3 2M3 18h14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span id="abrir-assinatura-rot">Assinar documento</span>
+            </button>
+            <a id="enviar-whats" class="btn-whats" href="https://wa.me/" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2.5a7.5 7.5 0 0 0-6.5 11.2L2.5 17.5l3.9-1A7.5 7.5 0 1 0 10 2.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.4 7.2c.2-.5.6-.5.8-.5h.5c.2 0 .4.1.5.4l.6 1.4c0 .2 0 .4-.1.5l-.4.5c.5 1 1.3 1.7 2.3 2.2l.5-.5c.1-.1.3-.2.5-.1l1.4.6c.3.1.4.3.4.5v.5c0 .3-.2.7-.6.8-.9.4-3.1-.2-4.6-1.8-1.6-1.6-2.1-3.6-1.8-4.5Z" fill="currentColor"/></svg>
+              <span>Enviar pelo WhatsApp</span>
+            </a>
+            <button type="button" id="remover-assinatura" class="btn-texto" hidden>Remover assinatura</button>
+          </div>
 
           <article class="papel" id="papel" aria-label="Prévia do documento">
             <header class="papel-topo">
@@ -187,7 +198,7 @@
                 <path d="M374,538 C395,554 400,584 392,612 H356 C348,584 353,554 374,538 Z M357,586 L339,622 L361,615 Z M391,586 L409,622 L387,615 Z" fill="#6516BD"/>
               </svg>
               <div class="papel-tit">
-                <p class="p-marca">Solution Innova Digital</p>
+                <p class="p-marca" id="p-marca">—</p>
                 <h3 id="p-titulo">Orçamento</h3>
               </div>
               <dl class="p-meta">
@@ -244,7 +255,7 @@
             </div>
 
             <div class="p-assin">
-              <div><span class="linha-assin"></span><p class="p-assin-rot" id="p-ass1-rot">Emitente</p><p id="p-ass1">—</p></div>
+              <div class="p-assin-emitente"><div class="p-assin-marca" id="p-assin-marca" hidden></div><span class="linha-assin"></span><p class="p-assin-rot" id="p-ass1-rot">Emitente</p><p id="p-ass1">—</p><p class="p-assin-quando" id="p-assin-quando" hidden></p></div>
               <div><span class="linha-assin"></span><p class="p-assin-rot" id="p-ass2-rot">Cliente (aceite)</p><p id="p-ass2">—</p></div>
             </div>
           </article>
@@ -268,6 +279,41 @@
   </footer>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="dlg-assinar" class="dlg" aria-labelledby="dlg-titulo">
+    <div class="dlg-in">
+      <div class="dlg-topo">
+        <h2 id="dlg-titulo">Assinar documento</h2>
+        <button type="button" class="dlg-fechar" data-fechar aria-label="Fechar">
+          <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="abas" role="tablist" aria-label="Forma de assinar">
+        <button type="button" role="tab" id="aba-desenhar" aria-selected="true" aria-controls="painel-desenhar">Desenhar</button>
+        <button type="button" role="tab" id="aba-clique" aria-selected="false" aria-controls="painel-clique" tabindex="-1">Clique para assinar</button>
+        <i class="abas-indicador" aria-hidden="true"></i>
+      </div>
+      <div id="painel-desenhar" role="tabpanel" aria-labelledby="aba-desenhar">
+        <div class="tela-wrap">
+          <canvas id="tela" role="img" aria-label="Área para desenhar a assinatura com o dedo ou o mouse"></canvas>
+          <span class="tela-guia" aria-hidden="true">Assine aqui</span>
+        </div>
+        <p class="dlg-msg" id="dlg-msg" aria-live="polite"></p>
+        <div class="dlg-acoes">
+          <button type="button" id="limpar-tela" class="btn-secundario">Limpar</button>
+          <button type="button" id="confirmar-desenho" class="btn-primario">Confirmar assinatura</button>
+        </div>
+      </div>
+      <div id="painel-clique" role="tabpanel" aria-labelledby="aba-clique" hidden>
+        <p class="ajuda">A assinatura vira o nome do emitente, com data e hora.</p>
+        <button type="button" id="assinar-clique" class="btn-assinar-clique">
+          <span id="clique-nome">Emitente</span>
+          <small id="clique-quando"></small>
+        </button>
+      </div>
+      <p class="dlg-nota">Assinatura do emitente para a demonstração. Não tem validade jurídica e não substitui a assinatura do cliente.</p>
+    </div>
+  </dialog>
 
   <template id="tpl-item">
     <div class="item">

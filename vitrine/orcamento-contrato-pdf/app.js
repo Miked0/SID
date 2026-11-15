@@ -24,29 +24,32 @@ const PAGAMENTO = {
   'credito-3': { rotulo: 'Cartão de crédito em 3x', parcelas: 3 },
 };
 
-// Dados de exemplo: cliente fictício. O contato é o WhatsApp público da SID.
+// Dados de exemplo: emitente e cliente fictícios, do público-alvo da SID
+// (um pequeno negócio emitindo para a cliente dele). Sem telefone do cliente
+// para o botão do WhatsApp nunca abrir conversa com um número real.
 const EXEMPLO = {
   tipo: 'orcamento',
-  empNome: 'Solution Innova Digital',
-  empContato: 'WhatsApp (11) 98477-4107 · solutioninnovadigital.com',
-  cliNome: 'Ana Ferreira (exemplo)',
+  empNome: 'Studio Aurora Estética (exemplo)',
+  empContato: '@studioaurora.exemplo · Pinheiros, São Paulo',
+  cliNome: 'Mariana Costa (exemplo)',
   cliDoc: '123.456.789-00',
   cliEmail: 'cliente@exemplo.com',
-  cliTel: '(11) 90000-0000',
+  cliTel: '',
   numero: 'ORC-2026-014',
   emissao: '2026-11-15',
   validade: '2026-12-15',
   itens: [
-    { descricao: 'Site institucional responsivo com 5 seções', qtd: '1', unit: '1800' },
-    { descricao: 'Identidade visual básica (logo e paleta de cores)', qtd: '1', unit: '900' },
-    { descricao: 'Hospedagem e domínio por 12 meses', qtd: '12', unit: '45' },
+    { descricao: 'Limpeza de pele profunda (pacote com 4 sessões)', qtd: '4', unit: '180' },
+    { descricao: 'Peeling de diamante', qtd: '1', unit: '250' },
+    { descricao: 'Máscara de LED (2 sessões)', qtd: '2', unit: '90' },
   ],
-  desconto: '5',
+  desconto: '10',
   pagamento: 'pix-2',
-  prazo: '15 dias úteis após aprovação e primeiro pagamento',
-  obs: 'Valores em reais. Orçamento válido até a data indicada.',
-  objeto: 'Desenvolvimento de site institucional responsivo, com identidade visual básica e publicação.',
-  rescisao: 'Qualquer parte pode rescindir com aviso prévio de 15 dias. As etapas concluídas permanecem devidas.',
+  prazo: 'Sessões semanais a partir de 18/11/2026',
+  obs: 'Valores em reais. Agendamentos pelo WhatsApp do studio.',
+  objeto: 'Prestação de serviços estéticos faciais, conforme os itens e condições deste documento.',
+  rescisao: 'Qualquer parte pode rescindir com aviso prévio de 7 dias. As sessões já realizadas permanecem devidas.',
+  assinatura: null,
 };
 
 const form = $('#form');
@@ -157,9 +160,15 @@ function lerForm() {
   };
 }
 
+let assinatura = null;
+
 function instantaneo(m) {
   const { itens, ...resto } = m;
-  return { ...resto, itens: itens.map(({ descricao, qtd, unit }) => ({ descricao, qtd, unit })) };
+  return {
+    ...resto,
+    itens: itens.map(({ descricao, qtd, unit }) => ({ descricao, qtd, unit })),
+    assinatura,
+  };
 }
 
 function calcular(m) {
@@ -328,6 +337,8 @@ function renderizar({ pulso = false } = {}) {
   set('p-emissao', br(m.emissao));
   set('p-validade', br(m.validade));
   set('p-emp-nome', txt(m.empNome));
+  set('p-marca', txt(m.empNome));
+  $('#enviar-whats').href = linkWhats(m, c);
   set('p-emp-contato', m.empContato);
   set('p-cli-nome', txt(m.cliNome));
   set('p-cli-doc', m.cliDoc);
@@ -395,6 +406,8 @@ function preencher(dados) {
     if (k === 'tipo' || k === 'itens') continue;
     if (form.elements[k]) form.elements[k].value = dados[k] ?? '';
   }
+  assinatura = dados.assinatura ?? null;
+  renderAssinatura();
   itensBox.replaceChildren();
   (dados.itens?.length ? dados.itens : [{}]).forEach((i) => novaLinha(i));
   mostrarErros([]);
@@ -529,6 +542,7 @@ function montarDocumento(m, c) {
     objeto: m.objeto || '—',
     valorTexto: `O valor total é ${moeda.format(c.total)}, pago da seguinte forma: ${minusculaInicial(textoPagamento(m, c))}.`,
     rescisao: m.rescisao || '—',
+    assinatura: m.assinatura === undefined ? assinatura : m.assinatura,
   };
 }
 
@@ -615,6 +629,198 @@ async function onGerar() {
 }
 
 // ---------------------------------------------------------------------------
+// WhatsApp
+// ---------------------------------------------------------------------------
+function linkWhats(m, c) {
+  const dig = (m.cliTel || '').replace(/\D/g, '');
+  let num = '';
+  if (dig.length === 10 || dig.length === 11) num = `55${dig}`;
+  else if (dig.startsWith('55') && (dig.length === 12 || dig.length === 13)) num = dig;
+  const doc = m.tipo === 'contrato' ? 'o contrato' : 'o orçamento';
+  const primeiro = (m.cliNome || '').replace(/\(.*?\)/g, '').trim().split(/\s+/)[0] || '';
+  const msg =
+    `Olá${primeiro ? `, ${primeiro}` : ''}! Segue ${doc} ${m.numero || ''} no valor de ${moeda.format(c.total)}. ` +
+    `Vou anexar o PDF aqui na conversa. Qualquer dúvida, é só me chamar.${m.empNome ? `\n${m.empNome}` : ''}`;
+  return `https://wa.me/${num}?text=${encodeURIComponent(msg.replace(/\s+(?=\n)/g, ''))}`;
+}
+
+// ---------------------------------------------------------------------------
+// Assinatura do emitente
+// ---------------------------------------------------------------------------
+const SVG = 'http://www.w3.org/2000/svg';
+const dlg = $('#dlg-assinar');
+const tela = $('#tela');
+const ctx = tela.getContext('2d');
+let tracos = [];
+let tracoAtual = null;
+
+const dataHora = (t) =>
+  new Date(t).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+function renderAssinatura() {
+  const alvo = $('#p-assin-marca');
+  const quando = $('#p-assin-quando');
+  alvo.replaceChildren();
+  alvo.hidden = !assinatura;
+  quando.hidden = !assinatura;
+  $('#remover-assinatura').hidden = !assinatura;
+  $('#abrir-assinatura-rot').textContent = assinatura ? 'Assinar de novo' : 'Assinar documento';
+  if (!assinatura) return;
+  if (assinatura.tipo === 'desenho') {
+    const svg = document.createElementNS(SVG, 'svg');
+    svg.setAttribute('viewBox', '0 0 300 100');
+    svg.setAttribute('aria-hidden', 'true');
+    for (const t of assinatura.tracos) {
+      const path = document.createElementNS(SVG, 'path');
+      const pts = t.length === 1 ? [t[0], [t[0][0] + 0.002, t[0][1]]] : t;
+      path.setAttribute('d', pts.map(([x, y], i) => `${i ? 'L' : 'M'}${(x * 300).toFixed(1)} ${(y * 100).toFixed(1)}`).join(' '));
+      svg.append(path);
+    }
+    alvo.append(svg);
+  } else {
+    const nome = document.createElement('span');
+    nome.className = 'assin-nome';
+    nome.textContent = assinatura.nome;
+    alvo.append(nome);
+  }
+  quando.textContent = `Assinado em ${dataHora(assinatura.quando)}`;
+}
+
+function ajustarTela() {
+  const r = tela.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  tela.width = Math.max(1, Math.round(r.width * dpr));
+  tela.height = Math.max(1, Math.round(r.height * dpr));
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  redesenhar();
+}
+
+function redesenhar() {
+  const r = tela.getBoundingClientRect();
+  ctx.clearRect(0, 0, r.width, r.height);
+  ctx.strokeStyle = '#2B0A57';
+  ctx.lineWidth = 2.4;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  for (const t of tracos) {
+    ctx.beginPath();
+    t.forEach(([x, y], i) => (i ? ctx.lineTo(x * r.width, y * r.height) : ctx.moveTo(x * r.width, y * r.height)));
+    if (t.length === 1) ctx.lineTo(t[0][0] * r.width + 0.5, t[0][1] * r.height);
+    ctx.stroke();
+  }
+  tela.closest('.tela-wrap').classList.toggle('com-traco', tracos.length > 0);
+}
+
+function pontoDe(e) {
+  const r = tela.getBoundingClientRect();
+  const x = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+  const y = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
+  return [Number(x.toFixed(4)), Number(y.toFixed(4))];
+}
+
+tela.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  tela.setPointerCapture(e.pointerId);
+  tracoAtual = [pontoDe(e)];
+  tracos.push(tracoAtual);
+  $('#dlg-msg').textContent = '';
+  redesenhar();
+});
+tela.addEventListener('pointermove', (e) => {
+  if (!tracoAtual) return;
+  const p = pontoDe(e);
+  const u = tracoAtual[tracoAtual.length - 1];
+  if (Math.hypot(p[0] - u[0], (p[1] - u[1]) / 3) < 0.004) return;
+  if (tracos.reduce((n, t) => n + t.length, 0) > 2400) return;
+  tracoAtual.push(p);
+  redesenhar();
+});
+for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+  tela.addEventListener(ev, () => {
+    tracoAtual = null;
+  });
+}
+
+function trocarAba(qual) {
+  const desenhar = qual === 'desenhar';
+  $('#aba-desenhar').setAttribute('aria-selected', String(desenhar));
+  $('#aba-clique').setAttribute('aria-selected', String(!desenhar));
+  $('#aba-desenhar').tabIndex = desenhar ? 0 : -1;
+  $('#aba-clique').tabIndex = desenhar ? -1 : 0;
+  $('#painel-desenhar').hidden = !desenhar;
+  $('#painel-clique').hidden = desenhar;
+  dlg.dataset.aba = qual;
+  if (desenhar) requestAnimationFrame(ajustarTela);
+}
+
+function abrirAssinatura() {
+  const nome = form.elements.empNome.value.trim() || 'Emitente';
+  tracos = [];
+  $('#dlg-msg').textContent = '';
+  $('#clique-nome').textContent = nome;
+  $('#clique-quando').textContent = dataHora(Date.now());
+  trocarAba('desenhar');
+  dlg.showModal();
+  requestAnimationFrame(ajustarTela);
+}
+
+function aplicarAssinatura(nova) {
+  assinatura = nova;
+  renderAssinatura();
+  dlg.close();
+  pulsarPapel();
+  poeira($('#p-assin-marca').hidden ? $('#abrir-assinatura') : $('#p-assin-marca'));
+  agendarRascunho();
+  toast('Assinatura do emitente aplicada. Ela também sai no PDF.');
+}
+
+$('#abrir-assinatura').addEventListener('click', abrirAssinatura);
+$('#remover-assinatura').addEventListener('click', () => {
+  assinatura = null;
+  renderAssinatura();
+  agendarRascunho();
+  $('#abrir-assinatura').focus();
+  toast('Assinatura removida.');
+});
+$('#limpar-tela').addEventListener('click', () => {
+  tracos = [];
+  redesenhar();
+  tela.focus();
+});
+$('#confirmar-desenho').addEventListener('click', () => {
+  const pontos = tracos.reduce((n, t) => n + t.length, 0);
+  if (pontos < 4) {
+    $('#dlg-msg').textContent = 'Desenhe sua assinatura na área acima antes de confirmar.';
+    return;
+  }
+  aplicarAssinatura({ tipo: 'desenho', tracos: tracos.map((t) => t.map((p) => [...p])), quando: Date.now() });
+});
+$('#assinar-clique').addEventListener('click', () => {
+  aplicarAssinatura({ tipo: 'clique', nome: form.elements.empNome.value.trim() || 'Emitente', quando: Date.now() });
+});
+$('#aba-desenhar').addEventListener('click', () => trocarAba('desenhar'));
+$('#aba-clique').addEventListener('click', () => trocarAba('clique'));
+$('.abas').addEventListener('keydown', (e) => {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+  e.preventDefault();
+  const proxima = dlg.dataset.aba === 'desenhar' ? 'clique' : 'desenhar';
+  trocarAba(proxima);
+  $(proxima === 'desenhar' ? '#aba-desenhar' : '#aba-clique').focus();
+});
+$$('[data-fechar]', dlg).forEach((b) => b.addEventListener('click', () => dlg.close()));
+dlg.addEventListener('click', (e) => {
+  if (e.target === dlg) dlg.close();
+});
+dlg.addEventListener('close', () => $('#abrir-assinatura').focus());
+window.addEventListener('resize', () => {
+  if (dlg.open && dlg.dataset.aba === 'desenhar') ajustarTela();
+});
+
+$('#enviar-whats').addEventListener('click', () => {
+  toast('Abrindo o WhatsApp com a mensagem pronta. Anexe o PDF baixado na conversa.');
+});
+
+// ---------------------------------------------------------------------------
 // Eventos
 // ---------------------------------------------------------------------------
 form.addEventListener('input', (e) => {
@@ -695,6 +901,7 @@ $('#novo').addEventListener('click', () => {
     obs: '',
     objeto: '',
     rescisao: EXEMPLO.rescisao,
+    assinatura: null,
   });
   agendarRascunho();
   $('#aviso-rascunho').hidden = true;

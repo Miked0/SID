@@ -498,6 +498,82 @@ form[data-tipo='contrato'] .seg-indicador { transform: translateX(calc(100% + 8p
 .p-assin-rot { margin-top: 8px !important; font: 800 0.875rem/1.2 var(--font-display) !important; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tinta-2); }
 .linha-assin { display: block; height: 44px; border-bottom: 1px solid var(--noite); }
 
+/* Ações da prévia: assinar e enviar */
+.previa-acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 0 0 16px; }
+.previa-acoes svg { width: 20px; height: 20px; flex-shrink: 0; }
+.previa-acoes .btn-secundario, .btn-whats { flex: 1 1 200px; }
+.btn-whats {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 12px 20px;
+  border-radius: var(--radius-md); background: var(--sucesso); color: var(--branco); border: 1px solid var(--sucesso);
+  font: 800 1.05rem/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.03em; text-decoration: none;
+  transition: transform var(--rapido) var(--ease-out), box-shadow var(--rapido) var(--ease-out), background var(--rapido);
+}
+.btn-whats:hover { transform: translateY(-2px); box-shadow: var(--shadow-key); background: #0B5A42; }
+.btn-whats:active { transform: translateY(1px) scale(0.99); }
+.previa-acoes .btn-texto[hidden] { display: none; }
+
+/* Assinatura na prévia */
+.p-assin-emitente { position: relative; }
+.p-assin-marca {
+  position: absolute; left: 4px; right: 4px; top: -6px; height: 52px; display: flex; align-items: flex-end;
+  animation: assinaturaEntra 700ms var(--ease-out);
+}
+.p-assin-marca[hidden] { display: none; }
+.p-assin-marca svg { width: 100%; height: 100%; overflow: visible; }
+.p-assin-marca path { fill: none; stroke: var(--roxo-fundo); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.assin-nome { font: 800 clamp(1.15rem, 3.6vw, 1.75rem)/1 var(--font-display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; color: var(--roxo-fundo); letter-spacing: 0.01em; padding-bottom: 6px; }
+.p-assin-quando { margin-top: 2px !important; font-size: 0.75rem !important; color: var(--tinta-2); }
+.p-assin-quando[hidden] { display: none; }
+@keyframes assinaturaEntra { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+
+/* Modal de assinatura */
+.dlg {
+  width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 0; border: 0; border-radius: var(--radius-xl);
+  background: var(--branco); color: var(--tinta); box-shadow: var(--shadow-drama); overflow: auto;
+}
+.dlg[open] { animation: dlgEntra var(--base) var(--ease-out); }
+.dlg::backdrop { background: rgba(23, 20, 29, 0.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+@keyframes dlgEntra { from { opacity: 0; transform: translateY(12px) scale(0.96); } to { opacity: 1; transform: none; } }
+.dlg-in { padding: 22px; }
+@media (min-width: 640px) { .dlg-in { padding: 28px; } }
+.dlg-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.dlg-fechar {
+  display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius-md);
+  border: 1px solid var(--filete); background: var(--branco); color: var(--tinta); cursor: pointer; transition: border-color var(--rapido), color var(--rapido), transform var(--rapido);
+}
+.dlg-fechar svg { width: 16px; height: 16px; }
+.dlg-fechar:hover { border-color: var(--roxo); color: var(--roxo); transform: rotate(90deg); }
+
+.abas { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 4px; margin-bottom: 16px; border: 1px solid var(--borda); border-radius: calc(var(--radius-md) + 4px); }
+.abas [role='tab'] {
+  position: relative; z-index: 1; min-height: 44px; border: 0; border-radius: var(--radius-md); background: transparent; cursor: pointer;
+  font: 800 1rem/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.03em; color: var(--tinta); transition: color var(--base) var(--ease-out);
+}
+.abas [role='tab'][aria-selected='true'] { color: var(--branco); }
+.abas-indicador { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 8px); border-radius: var(--radius-md); background: var(--roxo); transition: transform var(--lento) var(--ease-spring); }
+.dlg[data-aba='clique'] .abas-indicador { transform: translateX(calc(100% + 8px)); }
+
+.tela-wrap {
+  position: relative; aspect-ratio: 3 / 1; border: 1px dashed var(--borda); border-radius: var(--radius-lg);
+  background: linear-gradient(transparent calc(72% - 1px), var(--filete) calc(72% - 1px), var(--filete) 72%, transparent 72%), var(--papel);
+}
+.tela-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; border-radius: inherit; }
+.tela-guia { position: absolute; left: 14px; bottom: 10px; font: 800 0.8125rem/1 var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--tinta-2); pointer-events: none; transition: opacity var(--base); }
+.tela-wrap.com-traco .tela-guia { opacity: 0; }
+.dlg-msg { min-height: 1.4em; margin: 8px 0 0; font-size: 0.875rem; font-weight: 600; color: var(--erro); }
+.dlg-acoes { display: grid; grid-template-columns: 1fr 1.6fr; gap: 10px; margin-top: 8px; }
+.btn-assinar-clique {
+  display: grid; justify-items: center; gap: 6px; width: 100%; padding: 22px 24px; cursor: pointer;
+  border: 1.5px solid var(--roxo); border-radius: var(--radius-lg); background: var(--branco); color: var(--roxo);
+  transition: background var(--rapido), transform var(--rapido) var(--ease-out);
+}
+.btn-assinar-clique span { font: 800 clamp(1.8rem, 6vw, 2.4rem)/1 var(--font-display); overflow-wrap: anywhere; }
+.btn-assinar-clique small { font: 600 0.8125rem/1.2 var(--font-ui); color: var(--tinta-2); }
+.btn-assinar-clique:hover { background: rgba(101, 22, 189, 0.06); }
+.btn-assinar-clique:active { transform: scale(0.98); }
+.dlg-nota { margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--filete); font-size: 0.8125rem; color: var(--tinta-2); }
+#painel-desenhar[hidden], #painel-clique[hidden] { display: none; }
+
 /* ------------------------------------------------------------------ Histórico */
 .historico { padding-top: 40px; padding-bottom: 56px; }
 .hist-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -566,4 +642,9 @@ form[data-tipo='contrato'] .seg-indicador { transform: translateX(calc(100% + 8p
 @media (prefers-contrast: more) {
   .editor, .papel, .item, .hist-lista, input:not([type='radio']), select, textarea { border-width: 2px; box-shadow: none; }
   .hero-lead, .hero-fatos { color: var(--branco); }
+}
+
+@media (max-width: 480px) {
+  .dlg-acoes { grid-template-columns: 1fr 2fr; }
+  .dlg-acoes button { font-size: 0.82rem; letter-spacing: 0.04em; padding-inline: 10px; white-space: nowrap; }
 }

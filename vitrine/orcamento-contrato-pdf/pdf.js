@@ -175,6 +175,20 @@ class Pagina {
     this.ops.push(`${s} h f`);
   }
 
+  tracos(tracos, ox, oy, w, h, c, espessura = 1.3) {
+    const partes = [`${cor3(c)} RG ${espessura} w 1 J 1 j`];
+    for (const t of tracos) {
+      if (!t.length) continue;
+      const pts = t.length === 1 ? [t[0], [t[0][0] + 0.002, t[0][1]]] : t;
+      let s = '';
+      pts.forEach(([x, y], i) => {
+        s += `${(ox + x * w).toFixed(2)} ${(A4_H - (oy + y * h)).toFixed(2)} ${i ? 'l' : 'm'} `;
+      });
+      partes.push(`${s}S`);
+    }
+    this.ops.push(partes.join('\n'));
+  }
+
   texto(x, y, str, { tamanho = 10, fonte = 'C', cor = COR.noite, alinhar = 'esquerda' } = {}) {
     const F = this.F[fonte];
     let tx = x;
@@ -351,7 +365,8 @@ export function gerarPdf(doc, buffers) {
       pagina.retangulo(0, 0, A4_W, 124, COR.roxo);
       pagina.retangulo(0, 124, A4_W, 4, COR.menta);
       simbolo(pagina, 48, 30, 0.3);
-      pagina.texto(140, 48, 'SOLUTION INNOVA DIGITAL', { tamanho: 9, fonte: 'N', cor: COR.branco });
+      const nomeTopo = quebrar(fontes.N, (doc.empresa.nome || '').toUpperCase(), 9, 250)[0];
+      pagina.texto(140, 48, nomeTopo, { tamanho: 9, fonte: 'N', cor: COR.branco });
       pagina.texto(139, 96, titulo, { tamanho: 46, fonte: 'T', cor: COR.branco });
       pagina.texto(DIREITA, 48, `Nº ${doc.numero}`, { tamanho: 10, fonte: 'N', cor: COR.branco, alinhar: 'direita' });
       pagina.texto(DIREITA, 66, `Emissão ${doc.emissao}`, { tamanho: 9, cor: COR.branco, alinhar: 'direita' });
@@ -360,7 +375,7 @@ export function gerarPdf(doc, buffers) {
     } else {
       pagina.retangulo(0, 0, A4_W, 30, COR.roxo);
       pagina.retangulo(0, 30, A4_W, 2, COR.menta);
-      pagina.texto(MARGEM_X, 20, `SOLUTION INNOVA DIGITAL · ${titulo} ${doc.numero}`, {
+      pagina.texto(MARGEM_X, 20, `${(doc.empresa.nome || '').toUpperCase()} · ${titulo} ${doc.numero}`, {
         tamanho: 8,
         fonte: 'N',
         cor: COR.branco,
@@ -474,13 +489,31 @@ export function gerarPdf(doc, buffers) {
   y += 30;
   const rotuloA = eContrato ? 'Contratada' : 'Emitente';
   const rotuloB = eContrato ? 'Contratante' : 'Cliente (aceite)';
+  const a = doc.assinatura;
+  if (a && a.tipo === 'desenho' && Array.isArray(a.tracos)) {
+    pagina.tracos(a.tracos, MARGEM_X + 6, y - 14, 162, 54, COR.roxoFundo, 1.4);
+  } else if (a && a.tipo === 'clique') {
+    const nomeA = a.nome || doc.nomeEmitente;
+    const tamA = Math.min(22, (22 * 222) / Math.max(1, largura(fontes.T, nomeA, 22)));
+    pagina.texto(MARGEM_X + 4, y + 32, nomeA, { tamanho: Number(tamA.toFixed(2)), fonte: 'T', cor: COR.roxoFundo });
+  }
   pagina.linha(MARGEM_X, y + 40, 280, y + 40, COR.noite, 0.8);
   pagina.linha(315, y + 40, DIREITA, y + 40, COR.noite, 0.8);
   pagina.texto(MARGEM_X, y + 56, rotuloA.toUpperCase(), { tamanho: 9.5, fonte: 'T', cor: COR.tinta2 });
   pagina.texto(MARGEM_X, y + 70, doc.nomeEmitente, { tamanho: 9 });
   pagina.texto(315, y + 56, rotuloB.toUpperCase(), { tamanho: 9.5, fonte: 'T', cor: COR.tinta2 });
   pagina.texto(315, y + 70, doc.cliente.nome, { tamanho: 9 });
-  y += 88;
+  if (a && a.quando) {
+    const d = new Date(a.quando);
+    const z = (n) => String(n).padStart(2, '0');
+    pagina.texto(
+      MARGEM_X,
+      y + 83,
+      `Assinado pelo emitente em ${z(d.getDate())}/${z(d.getMonth() + 1)}/${d.getFullYear()} às ${z(d.getHours())}:${z(d.getMinutes())}`,
+      { tamanho: 7.5, cor: COR.tinta2 }
+    );
+  }
+  y += 100;
   if (eContrato) {
     garantir(24);
     pagina.texto(
@@ -494,7 +527,7 @@ export function gerarPdf(doc, buffers) {
   // Rodapé de todas as páginas
   paginas.forEach((p, i) => {
     p.linha(MARGEM_X, 800, DIREITA, 800, COR.filete, 0.6);
-    p.texto(MARGEM_X, 815, 'Solution Innova Digital · documento de demonstração', { tamanho: 7.5, cor: COR.tinta2 });
+    p.texto(MARGEM_X, 815, 'Feito com Solution Innova Digital · documento de demonstração', { tamanho: 7.5, cor: COR.tinta2 });
     p.texto(DIREITA, 815, `Página ${i + 1} de ${paginas.length}`, { tamanho: 7.5, cor: COR.tinta2, alinhar: 'direita' });
   });
 
