@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cardápio digital com QR code e pedido pelo WhatsApp | Demonstração SID</title>
+  <meta name="description" content="Demonstração de cardápio digital: o cliente escaneia o QR code da mesa, monta o pedido e envia pelo WhatsApp. Feito pela SID.">
+  <meta name="theme-color" content="#2B0A57">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://solutioninnovadigital.com/vitrine/cardapio-qr-whatsapp/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:site_name" content="SID · Solution Innova Digital">
+  <meta property="og:title" content="Cardápio digital com QR code e pedido pelo WhatsApp">
+  <meta property="og:description" content="Demonstração: escaneie o QR da mesa, monte o pedido e envie pelo WhatsApp.">
+  <meta property="og:url" content="https://solutioninnovadigital.com/vitrine/cardapio-qr-whatsapp/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fonts/big-shoulders-display-latin-832b15.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/manrope-latin-cf48e3.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="pular" href="#cardapio">Pular para o cardápio</a>
+
+  <header class="topo" id="topo">
+    <div class="wrap barra-topo">
+      <a class="marca" href="/" aria-label="SID · Solution Innova Digital, voltar ao site">
+        <svg viewBox="230 470 288 210" aria-hidden="true" focusable="false"><path d="M374,495 L500,655 L374,628 L250,655 Z" fill="#68E0BC"/><g fill="#6516BD"><path d="M374,538 C395,554 400,584 392,612 H356 C348,584 353,554 374,538 Z"/><path d="M357,586 L339,622 L361,615 Z"/><path d="M391,586 L409,622 L387,615 Z"/></g><circle cx="374" cy="572" r="9" fill="#68E0BC"/></svg>
+        <span>SID</span>
+      </a>
+      <span class="selo">Demonstração · dados de exemplo</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="titulo-hero">
+      <div class="wrap hero-grid">
+        <div class="hero-texto">
+          <p class="rot">Cardápio digital · Casa Brasa</p>
+          <h1 id="titulo-hero"><span class="linha"><span>Peça</span></span> <span class="linha"><span>sem <em>chamar</em></span></span> <span class="linha"><span>o garçom.</span></span></h1>
+          <p class="lead">Escaneie o QR code da mesa, escolha o que quiser e envie o pedido pelo WhatsApp. Sem app para instalar e sem fila.</p>
+          <a class="btn btn-menta" href="#cardapio">Ver o cardápio</a>
+        </div>
+
+        <figure class="qr-cartao" aria-label="Exemplo de QR code colado na mesa">
+          <img src="qr-mesa-12.svg" width="430" height="430" alt="QR code da mesa 12. Aponte a câmera do celular para abrir o cardápio.">
+          <figcaption>
+            <span class="rot">Mesa 12</span>
+            <span>Aponte a câmera do celular</span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="como" aria-label="Como funciona">
+      <ol class="wrap passos">
+        <li><span class="n">01</span><strong>Escaneie</strong><span>O QR code da mesa abre o cardápio no navegador.</span></li>
+        <li><span class="n">02</span><strong>Monte o pedido</strong><span>Escolha os itens, ajuste a quantidade e deixe observações.</span></li>
+        <li><span class="n">03</span><strong>Envie pelo WhatsApp</strong><span>A mensagem sai pronta com mesa, itens e total. A equipe confirma.</span></li>
+      </ol>
+    </section>
+
+    <section class="cardapio" id="cardapio" aria-labelledby="titulo-cardapio">
+      <div class="wrap">
+        <div class="cab-cardapio">
+          <h2 id="titulo-cardapio">Cardápio</h2>
+          <p class="mesa-info">Pedido para <strong id="mesa-atual">Mesa 12</strong></p>
+        </div>
+
+        <nav class="categorias" aria-label="Categorias do cardápio">
+          <ul id="categorias"></ul>
+        </nav>
+
+        <div class="ferramentas">
+          <label class="sr-only" for="busca">Buscar no cardápio</label>
+          <input id="busca" type="search" placeholder="Buscar: smash, batata, sobremesa" autocomplete="off" maxlength="40">
+          <button class="chip" type="button" id="filtro-vegano" aria-pressed="false">Só veganos</button>
+        </div>
+        <p class="sem-resultado" id="sem-resultado" hidden>Nenhum item encontrado. Tente outra busca.</p>
+
+        <div id="secoes"></div>
+      </div>
+    </section>
+
+    <section class="sobre-demo" aria-labelledby="titulo-demo">
+      <div class="wrap sobre-grid">
+        <div>
+          <p class="rot">Sobre esta demonstração</p>
+          <h2 id="titulo-demo">Um cardápio assim, com o seu menu</h2>
+        </div>
+        <div class="sobre-texto">
+          <p>Os pratos, preços e o número de WhatsApp são de exemplo. Nenhum pedido feito aqui é enviado a um restaurante de verdade: a mensagem só abre no WhatsApp de quem tocar no botão.</p>
+          <p>Na sua versão, cada mesa ganha o próprio QR code, o cardápio segue o que o restaurante cadastrar e o pedido chega direto no WhatsApp da casa.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <div class="wrap rodape-grid">
+      <div>
+        <p class="rot">Quer um cardápio assim?</p>
+        <p class="rodape-lead">A SID cria o cardápio, o QR code e o fluxo de pedido para o seu restaurante.</p>
+      </div>
+      <nav aria-label="Links da SID">
+        <ul>
+          <li><a href="https://solutioninnovadigital.com/#contato">Pedir orçamento</a></li>
+          <li><a href="https://solutioninnovadigital.com/">Voltar ao site da SID</a></li>
+        </ul>
+      </nav>
+      <p class="legal">© 2026 SID · Solution Innova Digital</p>
+    </div>
+  </footer>
+
+  <!-- Barra do carrinho -->
+  <div class="barra-pedido" id="barra-pedido" hidden>
+    <div class="wrap barra-pedido-in">
+      <p class="resumo" aria-live="polite"><span id="resumo-qtd">0 itens</span> <strong id="resumo-total">R$ 0,00</strong></p>
+      <button class="btn btn-menta" type="button" id="abrir-pedido" aria-haspopup="dialog" aria-controls="pedido">Ver pedido</button>
+    </div>
+  </div>
+
+  <!-- Painel do pedido -->
+  <div class="veu" id="veu" hidden></div>
+  <section class="pedido" id="pedido" role="dialog" aria-modal="true" aria-labelledby="titulo-pedido" aria-hidden="true" tabindex="-1">
+    <div class="pedido-cabeca">
+      <div class="puxador" aria-hidden="true"></div>
+      <div class="pedido-titulo">
+        <h2 id="titulo-pedido">Seu pedido</h2>
+        <button class="btn-fechar" type="button" id="fechar-pedido" aria-label="Fechar pedido">Fechar</button>
+      </div>
+    </div>
+
+    <div class="pedido-corpo">
+      <p class="vazio" id="vazio">Seu pedido está vazio. Escolha algo no cardápio.</p>
+      <ul class="itens-pedido" id="itens-pedido"></ul>
+
+      <div class="campo">
+        <label for="campo-nome">Seu nome <span class="opc">(opcional)</span></label>
+        <input id="campo-nome" type="text" autocomplete="given-name" maxlength="40" placeholder="Ex.: Ana">
+      </div>
+      <div class="campo">
+        <label for="campo-obs">Observações <span class="opc">(opcional)</span></label>
+        <textarea id="campo-obs" rows="3" maxlength="240" placeholder="Ex.: sem cebola, ponto da carne ao ponto"></textarea>
+      </div>
+
+      <dl class="totais">
+        <div><dt>Itens</dt><dd id="total-itens">0</dd></div>
+        <div class="total-final"><dt>Total</dt><dd id="total-pedido">R$ 0,00</dd></div>
+      </dl>
+    </div>
+
+    <div class="pedido-rodape">
+      <a class="btn btn-whatsapp" id="enviar-pedido" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.27 8.23Zm4.52-6.16c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.16.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.23.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.14-1.18-.06-.11-.23-.17-.48-.29Z"/></svg>
+        <span>Enviar pedido pelo WhatsApp</span>
+      </a>
+      <div class="acoes-secundarias">
+        <button class="link-btn" type="button" id="imprimir-comanda">Imprimir comanda</button>
+        <button class="link-btn" type="button" id="limpar-pedido">Limpar pedido</button>
+      </div>
+      <p class="nota-envio">Você confirma o envio no WhatsApp. Nada é enviado sem o seu toque.</p>
+    </div>
+  </section>
+
+  <article class="comanda" id="comanda" aria-hidden="true"></article>
+
+  <p class="confirmado" id="confirmado" role="status" aria-live="polite" hidden></p>
+
+  <a class="cta-fixo" href="https://solutioninnovadigital.com/#contato">Quero um cardápio assim</a>
+</body>
+</html>
