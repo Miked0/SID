@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel de vendas e metas · Solution Innova Digital</title>
+  <meta name="description" content="Exemplo de painel de vendas e metas da Solution Innova Digital: importe a planilha de vendas e veja os números da semana. Negócio e dados fictícios.">
+  <meta name="theme-color" content="#2B0A57">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/fonts.css">
+  <link rel="stylesheet" href="assets/app.css">
+  <link rel="preload" href="/fonts/big-shoulders-display-latin-832b15.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/manrope-latin-cf48e3.woff2" as="font" type="font/woff2" crossorigin>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo principal</a>
+
+  <header class="topo">
+    <div class="topo-marca">
+      <img src="assets/sid-simbolo.svg" alt="" width="36" height="26" class="simbolo">
+      <div>
+        <p class="rot">Solution Innova Digital</p>
+        <h1 class="titulo">Painel de vendas e metas</h1>
+      </div>
+    </div>
+    <p class="tarja">Exemplo · negócio fictício</p>
+  </header>
+
+  <main id="conteudo" class="wrap">
+
+    <section class="barra" aria-label="Filtros e tema">
+      <div class="campo">
+        <label for="filtro-loja">Loja</label>
+        <select id="filtro-loja"></select>
+      </div>
+      <div class="campo">
+        <span class="campo-rotulo" id="rot-periodo">Período</span>
+        <div class="segmento" role="group" aria-labelledby="rot-periodo">
+          <button type="button" class="seg" aria-pressed="false" data-periodo="hoje">Hoje</button>
+          <button type="button" class="seg" aria-pressed="true" data-periodo="semana">Semana</button>
+          <button type="button" class="seg" aria-pressed="false" data-periodo="mes">Mês</button>
+        </div>
+      </div>
+      <div class="barra-direita">
+        <button type="button" class="btn btn-ghost" id="btn-tema" aria-pressed="false">Alto contraste</button>
+        <p class="data-atual" id="data-atual"></p>
+      </div>
+    </section>
+
+    <section class="fontes" aria-labelledby="t-fontes">
+      <div class="fontes-cab">
+        <div>
+          <h2 id="t-fontes" class="h3">Fonte dos dados</h2>
+          <p class="apoio" id="fonte-texto" aria-live="polite"></p>
+        </div>
+        <div class="acoes">
+          <button type="button" class="btn btn-primario" id="btn-importar" aria-expanded="false" aria-controls="importar">Importar planilha</button>
+          <button type="button" class="btn btn-secundario" id="btn-exemplo">Restaurar exemplo</button>
+          <button type="button" class="btn btn-secundario" id="btn-csv">Baixar CSV</button>
+          <button type="button" class="btn btn-secundario" id="btn-pdf">Exportar PDF</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="painel importar" id="importar" aria-labelledby="t-importar" hidden>
+      <div class="painel-cab">
+        <h2 id="t-importar" class="h2">Importar planilha de vendas</h2>
+        <p class="apoio">Arquivo CSV com uma linha por venda ou atendimento. Colunas: data, loja, vendedor e valor. Status é opcional (Venda ou Perdido). O arquivo fica só neste navegador.</p>
+      </div>
+      <label class="dropzone" id="dropzone" for="arquivo">
+        <span class="dz-titulo">Arraste o CSV aqui ou clique para escolher</span>
+        <span class="dz-dica">Aceita .csv separado por vírgula ou ponto e vírgula · até 2 MB</span>
+        <input type="file" id="arquivo" accept=".csv,text/csv">
+      </label>
+      <p class="erro" id="importar-erro" role="alert" hidden></p>
+      <div id="mapeamento-wrap" hidden>
+        <h3 class="h3 passo">Conferir as colunas</h3>
+        <div class="mapa" id="mapa"></div>
+        <div class="tabela-wrap previa-wrap">
+          <table class="tabela previa">
+            <caption class="sr-only">Prévia das primeiras linhas importadas</caption>
+            <thead><tr id="previa-cab"></tr></thead>
+            <tbody id="previa-corpo"></tbody>
+          </table>
+        </div>
+        <p class="apoio" id="importar-resumo"></p>
+        <div class="acoes">
+          <button type="button" class="btn btn-primario" id="btn-confirmar">Importar registros</button>
+          <button type="button" class="btn btn-ghost" id="btn-cancelar">Cancelar</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="painel metas-card" aria-labelledby="t-metas">
+      <div class="painel-cab">
+        <h2 id="t-metas" class="h2">Metas semanais por loja</h2>
+        <p class="apoio">Ao mudar a meta, todos os números e alertas são recalculados. Hoje e mês usam a mesma meta, proporcional ao período.</p>
+      </div>
+      <div class="metas-lista" id="metas-lista"></div>
+    </section>
+
+    <div id="vazio-geral" class="vazio-geral" hidden>
+      <h2 class="h2">Nenhum dado para mostrar</h2>
+      <p class="apoio">Importe uma planilha de vendas ou restaure o exemplo.</p>
+    </div>
+
+    <section class="kpis" aria-label="Indicadores do período">
+      <article class="kpi kpi-destaque" id="kpi-fat">
+        <p class="kpi-rotulo">Faturamento da semana</p>
+        <p class="kpi-valor" data-valor>—</p>
+        <p class="kpi-delta" data-delta>—</p>
+      </article>
+      <article class="kpi kpi-neutro" id="kpi-ticket">
+        <p class="kpi-rotulo">Ticket médio</p>
+        <p class="kpi-valor" data-valor>—</p>
+        <p class="kpi-delta" data-delta>—</p>
+      </article>
+      <article class="kpi kpi-neutro" id="kpi-conv">
+        <p class="kpi-rotulo">Conversão</p>
+        <p class="kpi-valor" data-valor>—</p>
+        <p class="kpi-delta" data-delta>—</p>
+      </article>
+      <article class="kpi kpi-meta" id="kpi-meta">
+        <p class="kpi-rotulo">Meta da semana</p>
+        <p class="kpi-valor" data-valor>—</p>
+        <div class="barra-meta" role="progressbar" aria-label="Progresso da meta" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <span class="barra-meta-preench" data-preench></span>
+        </div>
+        <p class="kpi-delta" data-delta>—</p>
+      </article>
+    </section>
+
+    <div class="grade" id="grade">
+
+      <section class="painel grande" aria-labelledby="t-semana">
+        <div class="painel-cab">
+          <h2 id="t-semana" class="h2">Faturamento dia a dia</h2>
+          <p class="apoio" id="sub-grafico"></p>
+        </div>
+        <div class="grafico" id="grafico-semana"></div>
+        <ul class="legenda" aria-hidden="true">
+          <li><span class="sw sw-atual"></span>Semana atual</li>
+          <li><span class="sw sw-anterior"></span>Semana anterior</li>
+        </ul>
+      </section>
+
+      <section class="painel" aria-labelledby="t-alertas">
+        <div class="painel-cab">
+          <h2 id="t-alertas" class="h2">Alertas de meta</h2>
+        </div>
+        <div id="alertas" class="alertas" aria-live="polite"></div>
+      </section>
+
+      <section class="painel" aria-labelledby="t-lojas">
+        <div class="painel-cab">
+          <h2 id="t-lojas" class="h2">Metas por loja</h2>
+          <p class="apoio">Escala de 0 a 120% da meta. A marca preta indica 100%.</p>
+        </div>
+        <ul class="bullets" id="bullets"></ul>
+      </section>
+
+      <section class="painel" aria-labelledby="t-funil">
+        <div class="painel-cab">
+          <h2 id="t-funil" class="h2">Funil de vendas</h2>
+          <p class="apoio" id="funil-sub"></p>
+        </div>
+        <ol class="funil" id="funil"></ol>
+      </section>
+
+      <section class="painel" aria-labelledby="t-ranking">
+        <div class="painel-cab">
+          <h2 id="t-ranking" class="h2">Ranking de vendedores</h2>
+          <p class="apoio">Por faturamento no período</p>
+        </div>
+        <ol class="ranking" id="ranking"></ol>
+      </section>
+
+      <section class="painel grande" aria-labelledby="t-dias">
+        <div class="painel-cab">
+          <h2 id="t-dias" class="h2">Detalhamento por dia</h2>
+          <p class="apoio">Semana da data mais recente da planilha</p>
+        </div>
+        <div class="tabela-wrap">
+          <table class="tabela" id="tabela">
+            <caption class="sr-only">Faturamento, vendas e conversão por dia da semana</caption>
+            <thead>
+              <tr>
+                <th scope="col">Dia</th>
+                <th scope="col" class="num">Faturamento</th>
+                <th scope="col" class="num">Atendimentos</th>
+                <th scope="col" class="num">Vendas</th>
+                <th scope="col" class="num">Conversão</th>
+                <th scope="col" class="num">Ticket</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-dias"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+
+    <footer class="rodape">
+      <p>Painel de demonstração da <strong>Solution Innova Digital</strong>. A padaria, os nomes e os números são fictícios. Sua planilha fica só no seu navegador.</p>
+    </footer>
+  </main>
+
+  <div class="avisos" id="avisos" role="status" aria-live="polite"></div>
+
+  <script src="assets/app.js" defer></script>
+</body>
+</html>
