@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Controle financeiro por extrato · Demonstração · Solution Innova Digital</title>
+  <meta name="description" content="Demonstração de controle financeiro para pequenas empresas: importe o extrato, categorize e veja para onde vai o dinheiro.">
+  <meta name="theme-color" content="#2B0A57">
+  <link rel="canonical" href="https://solutioninnovadigital.com/vitrine/controle-financeiro-extrato/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fonts/big-shoulders-display-latin-832b15.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/manrope-latin-cf48e3.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/vitrine/controle-financeiro-extrato/assets/app.css">
+</head>
+<body>
+  <a class="pular" href="#vista">Pular para o conteúdo</a>
+
+  <header class="topo">
+    <div class="topo-in">
+      <a class="marca" href="https://solutioninnovadigital.com/" aria-label="Solution Innova Digital, voltar ao site">
+        <img src="/favicon.svg" width="30" height="30" alt="">
+        <span>Solution Innova Digital</span>
+      </a>
+      <div class="topo-acoes">
+        <div class="empresa" id="empresa">
+          <button type="button" class="empresa-gatilho" id="empresa-gatilho" aria-haspopup="listbox" aria-expanded="false" aria-controls="empresa-lista">
+            <span class="avatar" id="empresa-sigla" aria-hidden="true">PE</span>
+            <span class="empresa-nome" id="empresa-nome">Padaria Espiga de Ouro</span>
+            <span class="seta" aria-hidden="true"></span>
+          </button>
+          <ul class="empresa-lista" id="empresa-lista" role="listbox" aria-label="Selecionar empresa" hidden></ul>
+        </div>
+        <button type="button" class="tema" id="tema" aria-pressed="false">Light-Noir</button>
+      </div>
+    </div>
+    <nav class="abas" aria-label="Seções da demonstração">
+      <a href="#/inicio" data-rota="inicio">Início</a>
+      <a href="#/importar" data-rota="importar">Importar</a>
+      <a href="#/categorizar" data-rota="categorizar">Categorizar</a>
+      <a href="#/regras" data-rota="regras">Regras</a>
+      <a href="#/relatorios" data-rota="relatorios">Relatórios</a>
+      <a href="#/dre" data-rota="dre">DRE</a>
+      <a href="#/conciliacao" data-rota="conciliacao">Conciliação</a>
+      <a href="#/exportar" data-rota="exportar">Exportar</a>
+    </nav>
+  </header>
+
+  <main id="vista" tabindex="-1">
+    <p class="sr" aria-live="polite" id="anuncio"></p>
+    <div id="conteudo"></div>
+  </main>
+
+  <div class="avisos" id="avisos" role="status" aria-live="polite"></div>
+
+  <footer class="rodape">
+    <div class="rodape-in">
+      <p>Demonstração com dados fictícios. Tudo fica neste navegador, sem envio a servidor. <strong>Solution Innova Digital</strong>: sites, sistemas e identidade visual para pequenos negócios.</p>
+      <a class="btn primary" href="https://wa.me/5511984774107?text=Ol%C3%A1!%20Vi%20a%20demonstra%C3%A7%C3%A3o%20de%20controle%20financeiro%20por%20extrato%20e%20quero%20conversar." target="_blank" rel="noopener">Quero um sistema assim</a>
+    </div>
+  </footer>
+
+  <script src="/vitrine/controle-financeiro-extrato/assets/app.js" defer></script>
+</body>
+</html>
