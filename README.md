@@ -24,8 +24,6 @@ Número do WhatsApp: variável `WHATSAPP` em `assets/site.js` (só dígitos, com
 - `/privacidade` e `/termos`: textos genéricos, precisam de revisão jurídica
 - `404.html`: a Vercel serve sozinha para qualquer endereço que não existe
 
-## Privacidade e analytics
+## Privacidade
 
 - O site não grava cookies e não carrega nada de terceiros
-- `assets/aviso.js` (em todas as páginas) mostra o aviso de privacidade e carrega o Vercel Web Analytics (`/_vercel/insights/script.js`, mesmo domínio, sem cookies). Quem escolhe "Não contar minhas visitas" deixa de carregar o script; a escolha fica no `localStorage` (`sid-aviso`)
-- Ative a medição em Vercel → projeto → Analytics → Enable
