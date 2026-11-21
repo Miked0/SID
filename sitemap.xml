@@ -36,7 +36,7 @@
   </url>
   <url>
     <loc>https://solutioninnovadigital.com/sistemas-de-gestao</loc>
-    <lastmod>2026-11-06</lastmod>
+    <lastmod>2026-11-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -66,7 +66,7 @@
   </url>
   <url>
     <loc>https://solutioninnovadigital.com/blog</loc>
-    <lastmod>2026-11-06</lastmod>
+    <lastmod>2026-11-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -79,6 +79,18 @@
   <url>
     <loc>https://solutioninnovadigital.com/blog/como-aparecer-no-google-maps</loc>
     <lastmod>2026-11-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://solutioninnovadigital.com/blog/site-ou-instagram</loc>
+    <lastmod>2026-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://solutioninnovadigital.com/blog/planilha-ou-sistema-de-gestao</loc>
+    <lastmod>2026-11-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
